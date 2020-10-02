@@ -2,8 +2,9 @@
 # -*- coding:utf-8 -*-
 import sys
 import os
-picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'pic')
-libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib')
+resourcePath = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+picdir = os.path.join(resourcePath, 'pic')
+libdir = os.path.join(resourcePath, 'lib')
 if os.path.exists(libdir):
     sys.path.append(libdir)
 
@@ -14,9 +15,23 @@ from PIL import Image,ImageDraw,ImageFont
 import traceback
 
 totalWidth=250
+totalHeight=122
+
+clockSize=36
+emojiSize=20
+infoSize=20
+lenSize=12
+
+#Define fonts
+clockFont = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), clockSize)
+emojiFont = ImageFont.truetype(os.path.join(picdir, 'emoji.ttf'), emojiSize)
+infoFont = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), infoSize)
+lenFont = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), lenSize)
+
+w = 5 #buffer
+
 
 logging.basicConfig(level=logging.DEBUG)
-li2='Lorem ipsum dolor sit amet\nLorem ipsum dolor sit amet'
 try:
     logging.info("epd2in13_V2 Demo")
 
@@ -25,43 +40,26 @@ try:
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
 
-    # Drawing on the imag
-    emojifont = ImageFont.truetype(os.path.join(picdir, 'emoji.ttf'), 20)
+    #Define fonts
+    clockFont = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), clockSize)
+    emojiFont = ImageFont.truetype(os.path.join(picdir, 'emoji.ttf'), emojiSize)
+    infoFont = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), infoSize)
+    lenFont = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), lenSize)
 
     logging.info("1.Drawing on the image...")
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(image)
 
-#    draw.rectangle([(0,0),(50,50)],outline = 0)
-#    draw.rectangle([(55,0),(100,50)],fill = 0)
-#    draw.line([(0,0),(50,50)], fill = 0,width = 1)
-#    draw.line([(0,50),(50,0)], fill = 0,width = 1)
-#    draw.chord((10, 60, 50, 100), 0, 360, fill = 0)
-#    draw.ellipse((55, 60, 95, 100), outline = 0)
-#    draw.pieslice((55, 60, 95, 100), 90, 180, outline = 0)
-#    draw.pieslice((55, 60, 95, 100), 270, 360, fill = 0)
-#    draw.polygon([(110,0),(110,50),(150,25)],outline = 0)
-#    draw.polygon([(190,0),(190,50),(150,25)],fill = 0)
-#    ooga=0
-#    while 5*ooga < 122:
-#        draw.line([(0,5*ooga), (250,5*ooga)], fill=0, width=1)
-#        ooga+=1
-
-#    draw.text((0, 0), u'🎤\n🎼\n⏳', font = emojifont, fill = 0)
-
     infoSize=20
     vera = ImageFont.truetype(os.path.join(picdir, 'Vera.ttf'), infoSize)
 
-    chicago = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), infoSize)
 
     clockSize=36
-    clockft = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), clockSize)
 
     li='Lorem ipsum dolor sit amet'
     clocktx='23:58'
 
     durationSize = 12
-    durationFont = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), durationSize)
 
     (clW, clH) = draw.textsize(clocktx, clockft)
 
@@ -108,7 +106,7 @@ try:
 
     (reW,reH) = draw.textsize("-01:24", durationFont)
     print("remaining: W{} H{}".format(reW,reH))
-    draw.text((250-reW-5,clH+2*moH+17), "-01:24", font=durationFont, fill=0)
+    draw.text((250-reW,122-5-reH-3), "-01:24", font=durationFont, fill=0)
 
     duStart = moW+duW+5+5
     duEnd = 250-reW-5-5
@@ -117,26 +115,15 @@ try:
     print("duration bar: W{}".format(duLen))
     print("filled bar: W{}".format(duPct))
 
-    draw.rectangle([(duStart,clH+2*moH+8),(duEnd,clH+2*moH+29)], outline=0, width=3)
-    draw.rectangle([(duStart,clH+2*moH+8),(duStart+duPct,clH+2*moH+29)], outline=0, width=3, fill=0)
+    bartop = (122 + clH + 2*moH - 5)/2
+    barbottom = 122-5
+
+#    draw.rectangle([(duStart,clH+2*moH+8),(duEnd,122)], outline=0, width=3)
+#    draw.rectangle([(duStart,clH+2*moH+8),(duStart+duPct,clH+2*moH+29)], outline=0, width=3, fill=0)
+    draw.rectangle([(duStart,bartop),(duEnd,barbottom)], outline=0, width=3)
 
     epd.display(epd.getbuffer(image))
     time.sleep(2000)
-
-    # read bmp file
-    logging.info("2.read bmp file...")
-    image = Image.open(os.path.join(picdir, '2in13.bmp'))
-    epd.display(epd.getbuffer(image))
-    time.sleep(2)
-
-    # read bmp file on window
-    logging.info("3.read bmp file on window...")
-    # epd.Clear(0xFF)
-    image1 = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    bmp = Image.open(os.path.join(picdir, '100x100.bmp'))
-    image1.paste(bmp, (2,2))
-    epd.display(epd.getbuffer(image1))
-    time.sleep(2)
 
     # # partial update
     logging.info("4.show time...")
