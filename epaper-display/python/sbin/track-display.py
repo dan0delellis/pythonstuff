@@ -39,8 +39,40 @@ durationFont = ImageFont.truetype(os.path.join(picdir, 'Charcoal.ttf'), duration
 durationText = "88:88"
 remainingText = "-88:88"
 
-bufferWidth = 5
+class Layout:
+#Layout of display:
+# W = buffer width                                      V = buffer height = ((TH-Cy)/3)-MojiH
+# Ax = Horizontal Offset of Clock = (TW-clockW)/2;      Bx = End of Clock
+# Dx = Horizontal End of Row Headers;                   Gx = Horizontal offset of track info = Dx+W
+# Cy = Bottom of Clock                                  Ey = Bottom of First Row = Cy+MojiH+V                   Fy = Bottom of 2nd Row = Ey+MojiH+V     Jy=TH
+# Kx = Horizontal Offset of Duration bar = Dx+2W        Mx = Horizontal Offset of remaining = TW-[remain]-W     Nx = End of Prog bar = Mx-W
+#                   Ax      Bx
+#+-------------------------------------------------+
+#|                  | 12:34 |                      |
+#|____Dx__Gx________|_______|______________________|Cy
+#|arts|   |                                     _V_|
+#|____|_W_|_____ARTIST INFO________________________|Ey
+#|titl|   |                                     _V_|
+#|____|_W_|_____TITLE INFO_________________________|Fy
+#|time|   |     |  |                 |  |       _V_|
+#|____|_W_|Drtn_|W_[=====PRG BAR=====]_W|__|Rmn_|W_|Jy
+#                  Kx              Nx       Mx
+    def __init__(self, clockW, clockH, mojiW, mojiH, durationW, remainW, timerH):
+        self.bufferW = 5
+        self.bufferH = ((TH-clockH)/3) - MojiH
 
+        self.ClockX = (TW - clockW)/2
+        self.ClockY = 0
+        self.MojiX = 0
+        self.Row1Y = clockH + mojiH + bufferH
+        self.Row2Y = clockH + 2 * (mojiH + bufferH)
+        self.Row3Y = clockH + 3 * (mojiH + bufferH)
+        self.InfoX = mojiW + bufferW
+        self.DrtnX = self.InfoX
+        self.PrgSX = self.InfoX + durationW + bufferW
+        self.RemnX = TW - remainW - bufferW
+        self.PrgEX = self.RemnX - bufferW
+        self.PrgH = TH - mojiH - bufferH
 
 
 try:
@@ -55,13 +87,13 @@ try:
 
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(image)
-    
+
     def generateGrid():
         (clockW, clockH) = draw.textsize(clockText, clockFont)
         (mojiW, mojiH) = draw.textsize(emojiText, emojiFont)
         (durationW, durationH) = draw.textsize(durationText, durationSize)
         (remainingW, remainingH) = draw.textsize(remainingW, remainingH)
-        
+
         clockIndentx = (epd.width - clW) / 2
         clockEndx = clockIndentx + clW
 
