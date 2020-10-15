@@ -24,7 +24,7 @@ r = redis.Redis(host='10.0.0.2', port=6379, db=10)
 
 #define fonts
 emojiSize = 20
-emojifont = ImageFont.truetype(os.path.join(picdir, 'emoji.ttf'), 20)
+emojiFont = ImageFont.truetype(os.path.join(picdir, 'emoji.ttf'), 20)
 emojiText = u'🎤'
 
 infoSize = 20
