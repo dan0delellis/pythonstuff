@@ -63,17 +63,33 @@ class Layout:
 
         self.ClockX = (TW - clockW)/2
         self.ClockY = 0
+        self.ClockBottom = self.ClockY + clockH
+        def drawClockBox(self):
+            draw.rectangle([self.ClockX, self.ClockY, (self.ClockX+clockW), self.clockBottom],outline=0)
+
         self.MojiX = 0
-        self.Row1Y = clockH + mojiH + bufferH
-        self.Row2Y = clockH + 2 * (mojiH + bufferH)
-        self.Row3Y = clockH + 3 * (mojiH + bufferH)
-        self.InfoX = mojiW + bufferW
+        self.MojiEnd = self.MojiX + mojiW
+        self.Row1Y = self.ClockBottom + mojiH + bufferH
+        self.Row2Y = Row1Y + bufferH + mojiH
+        self.Row3Y = Row2Y + bufferH + mojiH
+
+        def drawHeaderBoxes(self):
+            draw.rectangle([self.MojiX, (self.ClockBottom+self.bufferH), self.MojiEnd, self.Row1Y], outline=0) #top header
+            draw.rectangle([self.MojiX, (self.Row1Y+self.bufferH), self.mojiEnd, self.Row2Y], outline=0) #middle header
+            draw.rectangle([self.MojiX, (self.Row2Y+self.bufferH), self.mojiEnd, self.Row3Y], outline=0) #bottom header
+
+        self.InfoX = self.mojiEnd + bufferW
+
+        def drawInfoBoxes(self):
+            draw.rectangle([self.InfoX, (self.ClockY+clockH+self.bufferH), TW-1, self.Row1Y], outline=0) #top info, artist
+            draw.rectangle([self.InfoX, (self.Row1Y+bufferH), TW-1, self.Row2Y], outline=0)  #middle info, title
+            draw.rectangle([self.InfoX, (self.Row2Y+bufferH), TW-1, self.Row3Y], outline=0)
+
         self.DrtnX = self.InfoX
         self.PrgSX = self.InfoX + durationW + bufferW
         self.RemnX = TW - remainW - bufferW
         self.PrgEX = self.RemnX - bufferW
         self.PrgH = TH - mojiH - bufferH
-
 
 try:
     logging.info("epd2in13_V2 Demo")
@@ -88,14 +104,12 @@ try:
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(image)
 
-    def generateGrid():
-        (clockW, clockH) = draw.textsize(clockText, clockFont)
-        (mojiW, mojiH) = draw.textsize(emojiText, emojiFont)
-        (durationW, durationH) = draw.textsize(durationText, durationSize)
-        (remainingW, remainingH) = draw.textsize(remainingW, remainingH)
+    (clockW, clockH) = draw.textsize(clockText, clockFont)
+    (mojiW, mojiH) = draw.textsize(emojiText, emojiFont)
+    (durationW, durationH) = draw.textsize(durationText, durationSize)
+    (remainingW, remainingH) = draw.textsize(remainingW, remainingH)
 
-        clockIndentx = (epd.width - clW) / 2
-        clockEndx = clockIndentx + clW
+    grid = Layout(clockW, clockH, mojiW, mojiH, durationW, remainingW, durationH)
 
     print("clock: {} {}".format(clW, clH))
     leftBuffer = (totalWidth - clW)/2
