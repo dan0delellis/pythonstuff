@@ -59,37 +59,40 @@ class Layout:
 #                  Kx              Nx       Mx
     def __init__(self, clockW, clockH, mojiW, mojiH, durationW, remainW, timerH):
         self.bufferW = 5
-        self.bufferH = ((TH-clockH)/3) - MojiH
+        self.bufferH = ((TH-clockH)/3) - mojiH
 
         self.ClockX = (TW - clockW)/2
         self.ClockY = 0
         self.ClockBottom = self.ClockY + clockH
-        def drawClockBox(self):
-            draw.rectangle([self.ClockX, self.ClockY, (self.ClockX+clockW), self.clockBottom],outline=0)
 
         self.MojiX = 0
         self.MojiEnd = self.MojiX + mojiW
-        self.Row1Y = self.ClockBottom + mojiH + bufferH
-        self.Row2Y = Row1Y + bufferH + mojiH
-        self.Row3Y = Row2Y + bufferH + mojiH
+        self.Row1Y = self.ClockBottom + mojiH + self.bufferH
+        self.Row2Y = self.Row1Y + self.bufferH + mojiH
+        self.Row3Y = self.Row2Y + self.bufferH + mojiH
 
-        def drawHeaderBoxes(self):
-            draw.rectangle([self.MojiX, (self.ClockBottom+self.bufferH), self.MojiEnd, self.Row1Y], outline=0) #top header
-            draw.rectangle([self.MojiX, (self.Row1Y+self.bufferH), self.mojiEnd, self.Row2Y], outline=0) #middle header
-            draw.rectangle([self.MojiX, (self.Row2Y+self.bufferH), self.mojiEnd, self.Row3Y], outline=0) #bottom header
-
-        self.InfoX = self.mojiEnd + bufferW
-
-        def drawInfoBoxes(self):
-            draw.rectangle([self.InfoX, (self.ClockY+clockH+self.bufferH), TW-1, self.Row1Y], outline=0) #top info, artist
-            draw.rectangle([self.InfoX, (self.Row1Y+bufferH), TW-1, self.Row2Y], outline=0)  #middle info, title
-            draw.rectangle([self.InfoX, (self.Row2Y+bufferH), TW-1, self.Row3Y], outline=0) #bottom info, duration info
+        self.InfoX = self.MojiEnd + self.bufferW
 
         self.DrtnX = self.InfoX
-        self.PrgSX = self.InfoX + durationW + bufferW
-        self.RemnX = TW - remainW - bufferW
-        self.PrgEX = self.RemnX - bufferW
-        self.PrgH = TH - mojiH - bufferH
+        self.PrgSX = self.InfoX + durationW + self.bufferW
+        self.RemnX = TW - remainW - self.bufferW
+        self.PrgEX = self.RemnX - self.bufferW
+        self.PrgH = TH - mojiH - self.bufferH
+
+    def drawClockBox(self):
+        draw.rectangle([self.ClockX, self.ClockY, (self.ClockX+clockW), self.ClockBottom],outline=0)
+
+    def drawHeaderBoxes(self):
+        draw.rectangle([self.MojiX, (self.ClockBottom+self.bufferH), self.MojiEnd, self.Row1Y], outline=0) #top header
+        draw.rectangle([self.MojiX, (self.Row1Y+self.bufferH), self.MojiEnd, self.Row2Y], outline=0) #middle header
+        draw.rectangle([self.MojiX, (self.Row2Y+self.bufferH), self.MojiEnd, self.Row3Y], outline=0) #bottom header
+
+    def drawInfoBoxes(self):
+        draw.rectangle([self.InfoX, (self.ClockY+clockH+self.bufferH), TW-1, self.Row1Y], outline=0) #top info, artist
+        draw.rectangle([self.InfoX, (self.Row1Y+self.bufferH), TW-1, self.Row2Y], outline=0)  #middle info, title
+        draw.rectangle([self.InfoX, (self.Row2Y+self.bufferH), TW-1, self.Row3Y], outline=0) #bottom info, duration info
+
+
 
 try:
     logging.info("epd2in13_V2 Demo")
@@ -106,10 +109,14 @@ try:
 
     (clockW, clockH) = draw.textsize(clockText, clockFont)
     (mojiW, mojiH) = draw.textsize(emojiText, emojiFont)
-    (durationW, durationH) = draw.textsize(durationText, durationSize)
-    (remainingW, remainingH) = draw.textsize(remainingW, remainingH)
+    (durationW, durationH) = draw.textsize(durationText, durationFont)
+    (remainingW, remainingH) = draw.textsize(remainingText, durationFont)
 
     grid = Layout(clockW, clockH, mojiW, mojiH, durationW, remainingW, durationH)
+    grid.drawClockBox()
+    grid.drawHeaderBoxes()
+    grid.drawInfoBoxes()
+    epd.display(epd.getbuffer(image))
 
     print("clock: {} {}".format(clW, clH))
     leftBuffer = (totalWidth - clW)/2
