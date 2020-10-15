@@ -83,7 +83,7 @@ class Layout:
         def drawInfoBoxes(self):
             draw.rectangle([self.InfoX, (self.ClockY+clockH+self.bufferH), TW-1, self.Row1Y], outline=0) #top info, artist
             draw.rectangle([self.InfoX, (self.Row1Y+bufferH), TW-1, self.Row2Y], outline=0)  #middle info, title
-            draw.rectangle([self.InfoX, (self.Row2Y+bufferH), TW-1, self.Row3Y], outline=0)
+            draw.rectangle([self.InfoX, (self.Row2Y+bufferH), TW-1, self.Row3Y], outline=0) #bottom info, duration info
 
         self.DrtnX = self.InfoX
         self.PrgSX = self.InfoX + durationW + bufferW
