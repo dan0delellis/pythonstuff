@@ -13,6 +13,7 @@ import time
 from PIL import Image,ImageDraw,ImageFont
 import traceback
 import redis
+import pickle
 
 TW = 250
 TH = 122
@@ -61,40 +62,85 @@ class Layout:
         self.bufferW = 5
         self.bufferH = ((TH-clockH)/3) - mojiH
 
-        self.ClockX = (TW - clockW)/2
-        self.ClockY = -4
-        self.ClockBottom = self.ClockY + clockH
+        self.ClockL = (TW - clockW)/2
+        self.ClockR = self.ClockL + clockW
+        self.ClockT = -4
+        self.ClockB = self.ClockT + clockH
 
-        self.MojiX = 0
-        self.MojiEnd = self.MojiX + mojiW
-        self.Row1Y = self.ClockBottom + self.bufferH
-        self.Row1B = self.Row1Y + mojiH
-        self.Row2Y = self.Row1B + self.bufferH 
-        self.Row2B = self.Row2Y + mojiH  
-        self.Row3Y = self.Row2B + self.bufferH 
-        self.Row3B = self.Row3Y + mojiH 
+        self.MojiL = 0
+        self.MojiR = self.MojiL + mojiW
+        self.Row1T = self.ClockB + self.bufferH
+        self.Row1B = self.Row1T + mojiH
+        self.Row2T = self.Row1B + self.bufferH 
+        self.Row2B = self.Row2T + mojiH  
+        self.Row3T = self.Row2B + self.bufferH 
+        self.Row3B = self.Row3T + mojiH 
 
-        self.InfoX = self.MojiEnd + self.bufferW
+        self.InfoL = self.MojiR + self.bufferW
 
-        self.DrtnX = self.InfoX
-        self.PrgSX = self.InfoX + durationW + self.bufferW
-        self.RemnX = TW - remainW - self.bufferW
-        self.PrgEX = self.RemnX - self.bufferW
-        self.PrgH = TH - mojiH - self.bufferH
+        self.DrtnL = self.InfoL
+        self.DrtnR = self.DrtnL + durationW
+        self.DrtnT = self.Row3B - durationH
+        self.DrtnB = self.Row3B
+        self.RemnR = TW - self.bufferW
+        self.RemnL = self.RemnR - remainW
+        self.PrgL = self.DrtnR + self.bufferW
+        self.PrgR = self.RemnL - self.bufferW
+        self.PrgT = self.Row3T + self.bufferH
+        self.PrgB = self.Row3B - self.bufferH
 
     def drawClockBox(self):
-        draw.rectangle([self.ClockX, self.ClockY, (self.ClockX+clockW), self.ClockBottom],outline=0)
+        draw.rectangle([self.ClockL, self.ClockT, self.ClockR, self.ClockB], outline=0)
 
     def drawHeaderBoxes(self):
-        draw.rectangle([self.MojiX, self.Row1Y, self.MojiEnd, self.Row1B], outline=0) #top header
-        draw.rectangle([self.MojiX, self.Row2Y, self.MojiEnd, self.Row2B], outline=0) #middle header
-        draw.rectangle([self.MojiX, self.Row3Y, self.MojiEnd, self.Row3B], outline=0) #bottom header
+        draw.rectangle([self.MojiL, self.Row1T, self.MojiR, self.Row1B], outline=0) #top header
+        draw.rectangle([self.MojiL, self.Row2T, self.MojiR, self.Row2B], outline=0) #middle header
+        draw.rectangle([self.MojiL, self.Row3T, self.MojiR, self.Row3B], outline=0) #bottom header
 
     def drawInfoBoxes(self):
-        draw.rectangle([self.InfoX, self.Row1Y, TW-1, self.Row1B], outline=0) #top info, artist
-        draw.rectangle([self.InfoX, self.Row2Y, TW-1, self.Row2B], outline=0)  #middle info, title
-        draw.rectangle([self.InfoX, self.Row3Y, TW-1, self.Row3B], outline=0) #bottom info, duration info
+        draw.rectangle([self.InfoL, self.Row1T, TW-1, self.Row1B], outline=0) #top info, artist
+        draw.rectangle([self.InfoL, self.Row2T, TW-1, self.Row2B], outline=0)  #middle info, title
+        draw.rectangle([self.InfoL, self.Row3T, TW-1, self.Row3B], outline=0) #bottom info, duration info
 
+    def drawDurationBoxes(self):
+        draw.rectangle([self.DrtnL, self.DrtnT, self.DrtnR, self.Row3B], outline=0)
+        draw.rectangle([self.RemnL, self.DrtnT, self.RemnR, self.Row3B], outline=0)
+
+    def drawProgressBar(self, ratio):
+        self.Size = self.PrgR - self.PrgL
+        self.Fill= ( ratio * self.Size ) + self.PrgL
+        draw.rectangle([self.PrgL, self.PrgT, self.PrgR, self.PrgB], outline=0)
+        draw.rectangle([self.PrgL, self.PrgT, self.Fill, self.PrgB], fill=0)
+
+    def writeClock(self, text, fnt):
+        draw.text((self.ClockL, self.ClockT), text, font=fnt, fill=0)
+
+    def writeHeaders(self, artist, title, counter, fnt):
+        draw.text((self.MojiL, self.Row1T), artist, font=fnt, fill=0)
+        draw.text((self.MojiL, self.Row2T), title, font=fnt, fill=0)
+        draw.text((self.MojiL, self.Row3T), counter, font=fnt, fill=0)
+
+    def writeInfo(self, artist, title, fnt):
+        draw.text((self.InfoL, self.Row1T), artist, font=fnt, fill=0)
+        draw.text((self.InfoL, self.Row2T), title, font=fnt, fill=0)
+
+    def writeDuration(self, length, elapsed, fnt):
+        def convertToHMS(duration):
+            seconds = duration
+            hours = seconds // 3600
+            seconds %= 3600 
+            minutes = seconds // 60
+            seconds %= 60
+            if int(duration) >= 3600:
+                return "%d:%02d:%02d" % (hours, minutes, seconds) 
+            return "%02d:%02d" % (minutes, seconds)
+        
+        timeString = convertToHMS(int(length))
+        draw.text((self.DrtnL, self.DrtnT), timeString, font=fnt, fill=0)
+ 
+        remainString = convertToHMS( int(length) - int(elapsed) )
+        remainString = "-{}".format(remainString)
+        draw.text((self.RemnL, self.DrtnT), remainString, font=fnt, fill=0)
 
 
 try:
@@ -106,79 +152,42 @@ try:
     epd.Clear(0xFF)
 
     logging.info("1.Drawing on the image...")
-
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(image)
 
+    #define element sizes
     (clockW, clockH) = draw.textsize(clockText, clockFont)
     (mojiW, mojiH) = draw.textsize(emojiText, emojiFont)
     (durationW, durationH) = draw.textsize(durationText, durationFont)
     (remainingW, remainingH) = draw.textsize(remainingText, durationFont)
 
     grid = Layout(clockW, clockH, mojiW, mojiH, durationW, remainingW, durationH)
-    grid.drawClockBox()
-    grid.drawHeaderBoxes()
-    grid.drawInfoBoxes()
+    #grid.drawClockBox()
+    #grid.drawHeaderBoxes()
+    #grid.drawInfoBoxes()
+    #grid.drawDurationBoxes()
 
     #draw clock
-#    draw.rectangle([(0,0),(249, clH)],outline=0)
-#    draw.rectangle([(0,0),(leftBuffer,clH)],outline=0)
-#    draw.rectangle([(rightBuffer,0),(totalWidth,clH)],outline=0)
-    draw.text((grid.ClockX,grid.ClockY), clockText, font = clockFont, fill=0)
+    timestamp = time.strftime('%H:%M')
+    grid.writeClock(timestamp, clockFont)
 
     #draw row headers
     artist = u'🎤'
     title = u'🎼'
-    time = u'⏳'
+    counter = u'⏳'
+    grid.writeHeaders(artist, title, counter, emojiFont)
 
-    draw.text((grid.MojiX, grid.Row1Y), artist, font=emojiFont, fill=0)
-    draw.text((grid.MojiX, grid.Row2Y), title, font=emojiFont, fill=0)
-    draw.text((grid.MojiX, grid.Row3Y), time, font=emojiFont, fill=0)
+    #get track info
+    trackInfo = r.get('track_info') 
+    dataUnpacked = pickle.loads(trackInfo)
 
-    epd.display(epd.getbuffer(image))
-#    draw.rectangle([(0,clH),(moW,clH+moH)],outline=0)     # mic
-#    draw.rectangle([(0,clH),(moW,clH+2*moH+4)],outline=0)  #note
-#    draw.rectangle([(0,clH),(moW,clH+3*moH+8)],outline=0)  #timer
-
-    headersTx = u'🎤\n🎼\n⏳'
-    hdW, hdH = draw.textsize(headersTx, emojifont)
-    print("1 emoji: w{}  h{}".format(moW, moH))
-    print("all head: w{} h{}".format(hdW, hdH))
-
-#    draw.rectangle([(0,clH),(hdW,121)],outline=0)
-
-
-    draw.text((0, clH-2), u'🎤\n🎼\n⏳', font = emojifont, fill = 0)
-
-    #write info:
-    (ifW,ifH) = draw.textsize(li, vera)
-    print("Text: W{},H{}".format(ifW,ifH))
-#    draw.rectangle([(moW,clH),(249,clH+moH)],outline=0)
-#    draw.rectangle([(moW,clH+moH),(249,clH+2*moH+4)],outline=0)
-#    draw.rectangle([(moW,clH+2*moH+4),(249,clH+3*moH+10)],outline=0)
-
-    draw.text((moW+4,clH+2),"Beady Eye", font = chicago, fill=0)
-    draw.text((moW+4,clH+moH+4), "I need a title with g", font=chicago, fill=0)
-    draw.text((moW+4,clH+2*moH+17), "03:37", font=durationFont, fill=0)
-
-    (duW,duH) = draw.textsize("03:37", durationFont)
-    print("duration: W{} H{}".format(duW,duH))
-
-    (reW,reH) = draw.textsize("-01:24", durationFont)
-    print("remaining: W{} H{}".format(reW,reH))
-    draw.text((250-reW-5,clH+2*moH+17), "-01:24", font=durationFont, fill=0)
-
-    duStart = moW+duW+5+5
-    duEnd = 250-reW-5-5
-    duLen = duEnd - duStart
-    duPct = (1 - (84/217.0) )*duLen
-    print("duration bar: W{}".format(duLen))
-    print("filled bar: W{}".format(duPct))
-
-    draw.rectangle([(duStart,clH+2*moH+8),(duEnd,clH+2*moH+29)], outline=0, width=3)
-    draw.rectangle([(duStart,clH+2*moH+8),(duStart+duPct,clH+2*moH+29)], outline=0, width=3, fill=0)
+    grid.writeInfo(dataUnpacked['artist'], dataUnpacked['title'], infoFont)
+    grid.writeDuration(dataUnpacked['length'], dataUnpacked['time'], durationFont)
+    grid.drawProgressBar(dataUnpacked['position'])
 
     epd.display(epd.getbuffer(image))
+
+
     time.sleep(2000)
 
     # read bmp file
