@@ -7,6 +7,7 @@ import pickle
 import time
 import sched
 from requests.auth import HTTPBasicAuth
+scheduler = sched.scheduler(time.time, time.sleep)
 
 r = redis.Redis(host='10.0.0.2', port=6379, db=10)
 
@@ -30,13 +31,20 @@ def initDict():
 def printState(state):
     print('{}: {}'.format(state, time.time()))
 
+def readInfo():
+    get_data = r.get("track_info")
+    get_data_unpickled = pickle.loads(get_data)
+
+
+    for i in get_data_unpickled.keys():
+        print('{}: {}'.format(i, get_data_unpickled[i]))
+
 def getInfo():
+    scheduler.enter(0.25,1,getInfo)
     printState("starting ")
     info = initDict()
-#    printState("Dict Init")
     curl_response = requests.get(source["url"], auth=HTTPBasicAuth(source["user"],source["password"]))
     curl_response.encoding = 'utf-8'
-#    printState("data curl")
     data = curl_response.json()
 
     for i in meta_fields:
@@ -46,17 +54,14 @@ def getInfo():
     for j in root_fields:
         if j in data.keys():
             info[j] = data[j]
-#    printState("parsedd  ")
 
     info_pickled = pickle.dumps(info,protocol=0)
     r.set("track_info", info_pickled)
     printState("data set ")
+    readInfo()
+    printState("data read")
 
-getInfo()
+
+scheduler.enter(0,1,getInfo)
+scheduler.run()
 #Test the output
-get_data = r.get("track_info")
-get_data_unpickled = pickle.loads(get_data)
-
-
-for i in get_data_unpickled.keys():
-    print('{}: {}'.format(i, get_data_unpickled[i]))
