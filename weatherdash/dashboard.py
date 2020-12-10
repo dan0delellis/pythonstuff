@@ -102,6 +102,8 @@ class Layout:
         self.HumidT = self.TempB + self.BufferH
         self.HumidB = self.BOTTOM
 
+        self.RPanL = self.LPanL + self.BufferW
+        self.RPanR = self.RIGHT
         self.Graph1T = self.TOP
         self.Graph1B = self.Graph1T + self.Graph1H
 
@@ -114,12 +116,12 @@ class Layout:
         #function to return coordinates to make life easier when drawing boxes
         def getCoords(obj):
             coords = {
-                'clock':    [self.LPanL, self.ClockT, self.LPanR, self.ClockB],
-                'temp':     [self.LPanL, self.TempT, self.LPanR, self.TempB],
-                'humid':    [self.LPanL, self.HumidT, self.LPanR, self.HumidB],
-                'graph1':   [self.LPanL, self.ClockT, self.LPanR, self.ClockB],
-                'graph2':   [self.LPanL, self.ClockT, self.LPanR, self.ClockB],
-                'graph3':   [self.LPanL, self.ClockT, self.LPanR, self.ClockB],
+                'clock':    [self.LPanL, self.ClockT,  self.LPanR, self.ClockB],
+                'temp':     [self.LPanL, self.TempT,   self.LPanR, self.TempB],
+                'humid':    [self.LPanL, self.HumidT,  self.LPanR, self.HumidB],
+                'graph1':   [self.RPanL, self.Graph1T, self.RPanR, self.Graph1B],
+                'graph2':   [self.RPanL, self.Graph2T, self.RPanR, self.Graph2B],
+                'graph3':   [self.RPanL, self.Graph3T, self.RPanR, self.BOTTOM],
             }
             return coords[obj]
 
