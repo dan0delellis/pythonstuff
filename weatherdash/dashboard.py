@@ -5,7 +5,7 @@ from tkinter.font import Font
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 
 clockTx = "88:88"
-clockSz=36
+clockSz = 36
 clockFt = ImageFont.truetype('Charcoal.ttf', clockSz)
 
 tempTx = "888F"
@@ -126,6 +126,7 @@ class Layout:
             return coords[obj]
 
         #functions to draw boxes
+
 
         #functions to write text
 
