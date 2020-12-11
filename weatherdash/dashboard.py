@@ -160,14 +160,15 @@ class Layout:
         for obj in boxes:
             print(f"drawing: {obj}")
             draw.rectangle(getCoords(obj), outline="black", fill="white")
-        self.image.save("/home/dan/herpderp.png", "PNG")
-
         #functions to write text
 
         #functions to generate graphs
+canvas = tkinter.Canvas(root, width=width, height=height)
+canvas.pack()
 
 layout = Layout()
 
-readout = ImageTk.PhotoImage(layout.image)
+readout = ImageTk.PhotoImage(image=layout.image)
+canvas.create_image(0,0,anchor="nw",image=readout)
 
 root.mainloop()
