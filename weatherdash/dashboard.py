@@ -99,19 +99,21 @@ class Layout:
 
         #Edges
         self.LEFT = self.EdgeX
-        self.RIGHT = width - self.EdgeX
+        self.RIGHT = width - self.EdgeX - 1
         self.TOP = self.EdgeY
-        self.BOTTOM = height - self.EdgeY
+        self.BOTTOM = height - self.EdgeY - 1
 
         self.TotalWidth = self.RIGHT - self.LEFT
         self.TotalHeight = self.BOTTOM - self.TOP
 
         #Find widest of clock, temp, humidity.  That's the left panel width (plus some buffer space around the text and edge buffer)
-        self.LPanW = getTextWidth(draw) + (2 * self.PadW)
 
         #Find how large each box can be
-        self.BoxHeight = (self.TotalHeight / 3 ) - ( 2 * self.BufferH)
+        self.BoxHeight = ( (self.TotalHeight - ( 2 * self.BufferH )) / 3 )
 
+        #self.LPanW = getTextWidth(draw) + (2 * self.PadW)
+        golden = ( 1 + 5 ** 0.5 ) /2
+        self.LPanW = floor(self.BoxHeight * golden)
         #Define how large each graph should be
         self.GraphW = self.TotalWidth - self.LPanW - self.BufferW
         self.Graph1H = ( self.TotalHeight / 2 ) - ( 2 * self.BufferH )
@@ -125,10 +127,10 @@ class Layout:
         self.ClockB = self.TOP + self.BoxHeight
 
         self.TempT = self.ClockB + self.BufferH
-        self.TempB = self.ClockB + self.BoxHeight
+        self.TempB = self.TempT + self.BoxHeight
 
         self.HumidT = self.TempB + self.BufferH
-        self.HumidB = self.BOTTOM
+        self.HumidB = self.HumidT + self.BoxHeight
 
         self.RPanL = self.LPanR + self.BufferW
         self.RPanR = self.RIGHT
@@ -158,7 +160,7 @@ class Layout:
         for obj in boxes:
             print(f"drawing: {obj}")
             draw.rectangle(getCoords(obj), outline="black", fill="white")
-        self.image.save("herpderp.png", "PNG")
+        self.image.save("/home/dan/herpderp.png", "PNG")
 
         #functions to write text
 
