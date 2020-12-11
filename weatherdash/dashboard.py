@@ -6,6 +6,7 @@ import tkinter
 from tkinter import ttk
 from tkinter.font import Font
 from PIL import Image,ImageDraw,ImageFont,ImageTk
+from ooga import getTextWidth
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-fullscreen', '-w', dest='fullscreen', action='store_false')
@@ -30,23 +31,23 @@ else:
 
 root.geometry(f"{width}x{height}")
 
-def getTextWidth(draw):
-    clockTx = "88:88"
-    clockSz = 36
-    clockFt = ImageFont.truetype('Charcoal.ttf', clockSz)
-
-    tempTx = "888F"
-    tempSz = clockSz
-    tempFt = clockFt
-
-    humidTx = "888%"
-    humidSz = clockSz
-    humidFt = clockFt
-
-    (cW, cH) = draw.textsize(clockTx, clockFt)
-    (tW, tH) = draw.textsize(tempTx, tempFt)
-    (hW, hT) = draw.textsize(humidTx, humidFt)
-    return max(cW, tW, hW)
+#def getTextWidth(draw):
+#    clockTx = "88:88"
+#    clockSz = 36
+#    clockFt = ImageFont.truetype('Charcoal.ttf', clockSz)
+#
+#    tempTx = "888F"
+#    tempSz = clockSz
+#    tempFt = clockFt
+#
+#    humidTx = "888%"
+#    humidSz = clockSz
+#    humidFt = clockFt
+#
+#    (cW, cH) = draw.textsize(clockTx, clockFt)
+#    (tW, tH) = draw.textsize(tempTx, tempFt)
+#    (hW, hT) = draw.textsize(humidTx, humidFt)
+#    return max(cW, tW, hW)
 
 class Layout:
     #####################################################
