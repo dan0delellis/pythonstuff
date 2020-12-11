@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 from math import floor
-import argparse
-import os
-import tkinter
+import argparse, os, tkinter
 from tkinter import ttk
 from tkinter.font import Font
 from PIL import Image,ImageDraw,ImageFont,ImageTk
-from ooga import getTextWidth
+from dashboard_variables import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-fullscreen', '-w', dest='fullscreen', action='store_false')
@@ -31,57 +29,7 @@ else:
 
 root.geometry(f"{width}x{height}")
 
-#def getTextWidth(draw):
-#    clockTx = "88:88"
-#    clockSz = 36
-#    clockFt = ImageFont.truetype('Charcoal.ttf', clockSz)
-#
-#    tempTx = "888F"
-#    tempSz = clockSz
-#    tempFt = clockFt
-#
-#    humidTx = "888%"
-#    humidSz = clockSz
-#    humidFt = clockFt
-#
-#    (cW, cH) = draw.textsize(clockTx, clockFt)
-#    (tW, tH) = draw.textsize(tempTx, tempFt)
-#    (hW, hT) = draw.textsize(humidTx, humidFt)
-#    return max(cW, tW, hW)
-
 class Layout:
-    #####################################################
-    #                                                   #
-    #     Yx      Ax  Bx                          Zx    #
-    #    +----------------------------------------+Uy   #
-    #    |       |_W_|                            |     #
-    #    | 12:34 |   |                            |     #
-    #  Cy|_______|   |      graph                 |     #
-    #  Dy|-------|   |____________________________|Gy   #
-    #    | 123F  |   |----------------------------|Hy   #
-    #  Ey|_______|   |         graph?             |     #
-    #  Fy|-------|   |____________________________|Iy   #
-    #    | 23%   |   |----------------------------|Jy   #
-    #    |       |   |           ?????            |     #
-    #    +----------------------------------------+Vy   #
-    #                                                   #
-    #####################################################
-
-#Yx = left edge + edge buffer width                         (LEFT)      =   (LPanL)
-#Ax = edge of left panel                                    (LPanR)
-#Bx = edge of left panel + buffer width                     (RPanL)
-#Zx = right edge - edge buffer width                        (RIGHT)     =   (RPanR)
-#Uy = top + edge buffer height                              (TOP)       =   (ClockT)    =   (Graph1T)
-#Cy = bottom of clock area                                  (ClockB)
-#Dy = top of temp area = Cy+vbuffer height                  (TempT)
-#Ey = bottom of temp area                                   (TempB)
-#Fy = top of humidty area  = Ey + vbuffer height            (HumidT)
-#Gy = bottom of top graph                                   (Graph1B)
-#Hy = top of middle graph = Gy + vbuffer                    (Graph2T)
-#Iy = bottom of middle graph                                (Graph2B)
-#Jy = top of bottom area                                    (Graph3T)
-#Vy = bottom - edge buffer height                           (BOTTOM)    =   (HumidB)    =   (Graph3B)
-
     def __init__(self):
         self.image = Image.new('RGB', (width, height), 'red')
         draw = ImageDraw.Draw(self.image)
@@ -107,8 +55,6 @@ class Layout:
 
         self.TotalWidth = self.RIGHT - self.LEFT
         self.TotalHeight = self.BOTTOM - self.TOP
-
-        #Find widest of clock, temp, humidity.  That's the left panel width (plus some buffer space around the text and edge buffer)
 
         #Find how large each box can be
         self.BoxHeight = ( (self.TotalHeight - ( 2 * self.BufferH )) / 3 )
