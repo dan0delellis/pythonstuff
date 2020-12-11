@@ -3,6 +3,7 @@ from math import floor
 import argparse
 import os
 import tkinter
+from tkinter import ttk
 from tkinter.font import Font
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 
@@ -163,12 +164,10 @@ class Layout:
         #functions to write text
 
         #functions to generate graphs
-canvas = tkinter.Canvas(root, width=width, height=height)
-canvas.pack()
 
 layout = Layout()
 
 readout = ImageTk.PhotoImage(image=layout.image)
-canvas.create_image(0,0,anchor="nw",image=readout)
-
+image_label = tkinter.ttk.Label(root, image = readout)
+image_label.place(x=0,y=0)
 root.mainloop()
