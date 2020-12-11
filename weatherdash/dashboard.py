@@ -1,25 +1,51 @@
 #!/usr/bin/env python3
+from math import floor
+import argparse
 import os
 import tkinter
 from tkinter.font import Font
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 
-clockTx = "88:88"
-clockSz = 36
-clockFt = ImageFont.truetype('Charcoal.ttf', clockSz)
-
-tempTx = "888F"
-tempSz = clockSz
-tempFt = clockFt
-
-humidTx = "888%"
-tempSz = clockSz
-tempFt = clockFt
+parser = argparse.ArgumentParser()
+parser.add_argument('--no-fullscreen', '-w', dest='fullscreen', action='store_false')
+parser.add_argument('--fullscreen', '-f', dest='fullscreen', action='store_true')
+parser.set_defaults(fullscreen=False)
+args = parser.parse_args()
 
 #define display
 root = tkinter.Tk()
-width = root.winfo_screenwidth()
-height = root.winfo_screenheight()
+width = 800
+height = 480
+
+screenWidth = root.winfo_screenwidth()
+screenHeight = root.winfo_screenheight()
+
+if args.fullscreen:
+    width = root.winfo_screenwidth()
+    height = root.winfo_screenheight()
+else:
+    width = floor(root.winfo_screenwidth() / 2)
+    height = floor(root.winfo_screenheight() / 2)
+
+root.geometry(f"{width}x{height}")
+
+def getTextWidth(draw):
+    clockTx = "88:88"
+    clockSz = 36
+    clockFt = ImageFont.truetype('Charcoal.ttf', clockSz)
+
+    tempTx = "888F"
+    tempSz = clockSz
+    tempFt = clockFt
+
+    humidTx = "888%"
+    humidSz = clockSz
+    humidFt = clockFt
+
+    (cW, cH) = draw.textsize(clockTx, clockFt)
+    (tW, tH) = draw.textsize(tempTx, tempFt)
+    (hW, hT) = draw.textsize(humidTx, humidFt)
+    return max(cW, tW, hW)
 
 class Layout:
     #####################################################
@@ -54,7 +80,9 @@ class Layout:
 #Jy = top of bottom area                                    (Graph3T)
 #Vy = bottom - edge buffer height                           (BOTTOM)    =   (HumidB)    =   (Graph3B)
 
-    def __init__(self, clockW, clockH, tempW, tempH, humidW, humidH):
+    def __init__(self):
+        self.image = Image.new('RGB', (width, height), 'red')
+        draw = ImageDraw.Draw(self.image)
         #define buffer sizes
 
         #Edge buffer sizes
@@ -79,7 +107,7 @@ class Layout:
         self.TotalHeight = self.BOTTOM - self.TOP
 
         #Find widest of clock, temp, humidity.  That's the left panel width (plus some buffer space around the text and edge buffer)
-        self.LPanW = max(clockW, tempW, humidW) + (2 * self.PadW)
+        self.LPanW = getTextWidth(draw) + (2 * self.PadW)
 
         #Find how large each box can be
         self.BoxHeight = (self.TotalHeight / 3 ) - ( 2 * self.BufferH)
@@ -88,7 +116,7 @@ class Layout:
         self.GraphW = self.TotalWidth - self.LPanW - self.BufferW
         self.Graph1H = ( self.TotalHeight / 2 ) - ( 2 * self.BufferH )
         self.Graph2H = ( self.TotalHeight / 3 ) - ( 2 * self.BufferH )
-        self.Graph3H = self.TotalHeight - self.Graph1 - self.Graph2 - ( 2 * self.BufferH )
+        self.Graph3H = self.TotalHeight - self.Graph1H - self.Graph2H - ( 2 * self.BufferH )
 
         #define coordinates for each box
         self.LPanL = self.LEFT
@@ -102,7 +130,7 @@ class Layout:
         self.HumidT = self.TempB + self.BufferH
         self.HumidB = self.BOTTOM
 
-        self.RPanL = self.LPanL + self.BufferW
+        self.RPanL = self.LPanR + self.BufferW
         self.RPanR = self.RIGHT
         self.Graph1T = self.TOP
         self.Graph1B = self.Graph1T + self.Graph1H
@@ -111,7 +139,7 @@ class Layout:
         self.Graph2B = self.Graph2T + self.Graph2H
 
         self.Graph3T = self.Graph2B + self.BufferH
-        self.Graph3B = BOTTOM
+        self.Graph3B = self.BOTTOM
 
         #function to return coordinates to make life easier when drawing boxes
         def getCoords(obj):
@@ -126,14 +154,18 @@ class Layout:
             return coords[obj]
 
         #functions to draw boxes
-
+        boxes = ['clock', 'temp', 'humid', 'graph1', 'graph2', 'graph3']
+        for obj in boxes:
+            print(f"drawing: {obj}")
+            draw.rectangle(getCoords(obj), outline="black", fill="white")
+        self.image.save("herpderp.png", "PNG")
 
         #functions to write text
 
         #functions to generate graphs
 
+layout = Layout()
 
-
-
+readout = ImageTk.PhotoImage(layout.image)
 
 root.mainloop()
