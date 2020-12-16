@@ -28,8 +28,8 @@ result = cursor.fetchall()
 x = []
 y = []
 for i in result:
-    x.append([i[0]])
-    y.append(i[1])
+    y.append(( 9 * i[1] / 5 ) + 32 )
+    x.append(i[0])
 
 print(datetime.now())
 plt.plot(x, y, label="temp")
