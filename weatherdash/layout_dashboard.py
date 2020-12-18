@@ -2,6 +2,15 @@ from PIL import Image,ImageDraw,ImageFont,ImageTk
 
 class Layout:
     def __init__(self, width, height):
+        def getTextArea(self, coords):
+            boundryL = coords[0] + self.PadW
+            boundryT = coords[1] + self.PadH
+            boundryR = coords[2] - self.PadW
+            boundryB = coords[3] - self.PadH
+            return [boundryL, boundryT, boundryR, boundryB]
+
+
+
         self.image = Image.new('RGB', (width, height), 'red')
         draw = ImageDraw.Draw(self.image)
         #define buffer sizes
@@ -75,5 +84,7 @@ class Layout:
         for obj in boxes:
             print(f"drawing: {obj}")
             draw.rectangle(coords[obj], outline="black", fill="white")
+            draw.rectangle(getTextArea(self, coords[obj]), outline="black", fill="green")
+
 
 

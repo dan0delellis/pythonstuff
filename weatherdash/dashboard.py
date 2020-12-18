@@ -4,8 +4,7 @@ import argparse, os, tkinter
 from tkinter import ttk
 from tkinter.font import Font
 from PIL import Image,ImageDraw,ImageFont,ImageTk
-from dashboard_variables import *
-from dashboard_layout import Layout
+from layout_dashboard import Layout
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-fullscreen', '-w', dest='fullscreen', action='store_false')

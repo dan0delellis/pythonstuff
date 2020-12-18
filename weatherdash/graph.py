@@ -28,7 +28,7 @@ result = cursor.fetchall()
 x = []
 y = []
 for i in result:
-    y.append(( 9 * i[1] / 5 ) + 32 )
+    y.append(i[1])
     x.append(i[0])
 
 print(datetime.now())
