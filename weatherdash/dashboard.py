@@ -5,6 +5,7 @@ from tkinter import ttk
 from tkinter.font import Font
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 from layout_dashboard import Layout
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-fullscreen', '-w', dest='fullscreen', action='store_false')
@@ -17,6 +18,8 @@ print(args.debug)
 root = tkinter.Tk()
 width = 800
 height = 480
+
+fnt = ImageFont.truetype("Charcoal.ttf", 40)
 
 screenWidth = root.winfo_screenwidth()
 screenHeight = root.winfo_screenheight()
@@ -35,5 +38,15 @@ layout = Layout(width, height, args.debug)
 readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
-print(layout.coords)
+root.update()
+i=0
+while (i<100):
+    image = Image.new('RGB', (100,100), "pink")
+    draw = ImageDraw.Draw(image, 'RGB')
+    draw.text((0,0), text=f"{i}", font=fnt, fill="black")
+    readout.paste(image)
+    i+=1
+    root.update()
+    time.sleep(1)
+
 root.mainloop()

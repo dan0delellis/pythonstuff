@@ -1,4 +1,5 @@
 from PIL import Image,ImageDraw,ImageFont,ImageTk
+import time
 
 class Layout:
     def __init__(self, width, height, debug):
@@ -10,7 +11,7 @@ class Layout:
             return [boundryL, boundryT, boundryR, boundryB]
 
         self.image = Image.new('RGB', (width, height), 'slategrey')
-        draw = ImageDraw.Draw(self.image)
+        self.draw = ImageDraw.Draw(self.image)
         #define buffer sizes
 
         #Edge buffer sizes
@@ -82,5 +83,5 @@ class Layout:
         if debug:
             for obj in boxes:
                 print(f"drawing: {obj}")
-                draw.rectangle(self.coords[obj], outline="black", fill="white")
-                draw.rectangle(getTextArea(self, self.coords[obj]), outline="black", fill="green")
+                self.draw.rectangle(self.coords[obj], outline="black", fill="white")
+                self.draw.rectangle(getTextArea(self, self.coords[obj]), outline="black", fill="green")
