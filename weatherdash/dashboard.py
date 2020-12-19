@@ -9,9 +9,10 @@ from layout_dashboard import Layout
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-fullscreen', '-w', dest='fullscreen', action='store_false')
 parser.add_argument('--fullscreen', '-f', dest='fullscreen', action='store_true')
-parser.set_defaults(fullscreen=False)
+parser.add_argument('--debug', '-d', dest='debug', action='store_true')
+parser.set_defaults(fullscreen=False, debug=False)
 args = parser.parse_args()
-
+print(args.debug)
 #define display
 root = tkinter.Tk()
 width = 800
@@ -29,9 +30,10 @@ else:
 
 root.geometry(f"{width}x{height}")
 
-layout = Layout(width, height)
+layout = Layout(width, height, args.debug)
 
 readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
+print(layout.coords)
 root.mainloop()

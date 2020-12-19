@@ -1,7 +1,7 @@
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 
 class Layout:
-    def __init__(self, width, height):
+    def __init__(self, width, height, debug):
         def getTextArea(self, coords):
             boundryL = coords[0] + self.PadW
             boundryT = coords[1] + self.PadH
@@ -9,9 +9,7 @@ class Layout:
             boundryB = coords[3] - self.PadH
             return [boundryL, boundryT, boundryR, boundryB]
 
-
-
-        self.image = Image.new('RGB', (width, height), 'red')
+        self.image = Image.new('RGB', (width, height), 'slategrey')
         draw = ImageDraw.Draw(self.image)
         #define buffer sizes
 
@@ -71,7 +69,7 @@ class Layout:
         self.Graph3T = self.Graph2B + self.BufferH
         self.Graph3B = self.BOTTOM
 
-        coords = {
+        self.coords = {
             'clock':    [self.LPanL, self.ClockT,  self.LPanR, self.ClockB],
             'temp':     [self.LPanL, self.TempT,   self.LPanR, self.TempB],
             'humid':    [self.LPanL, self.HumidT,  self.LPanR, self.HumidB],
@@ -81,10 +79,8 @@ class Layout:
         }
 
         boxes = ['clock', 'temp', 'humid', 'graph1', 'graph2', 'graph3']
-        for obj in boxes:
-            print(f"drawing: {obj}")
-            draw.rectangle(coords[obj], outline="black", fill="white")
-            draw.rectangle(getTextArea(self, coords[obj]), outline="black", fill="green")
-
-
-
+        if debug:
+            for obj in boxes:
+                print(f"drawing: {obj}")
+                draw.rectangle(self.coords[obj], outline="black", fill="white")
+                draw.rectangle(getTextArea(self, self.coords[obj]), outline="black", fill="green")
