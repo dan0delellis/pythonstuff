@@ -2,6 +2,7 @@ from PIL import Image,ImageDraw,ImageFont,ImageTk
 import time
 import mysql.connector as sql
 from datetime import timedelta, datetime
+from math import floor
 
 def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1):
     if(password is None):
@@ -10,8 +11,6 @@ def getDataFromMysql(host="localhost", user="root", password=None, database="dat
         db = sql.connect(host=host, user=user, database=database, password=password)
 
     cursor = db.cursor()
-
-    datetimeString = "%Y-%m-%d %H:%M:%S"
 
     endTimeStamp = datetime.now()
     lookbackRange = lookback * timedelta(minutes=1)
@@ -28,7 +27,7 @@ def getDataFromMysql(host="localhost", user="root", password=None, database="dat
         temp += i[0]
         humid += i[1]
         n += 1
-    return (32 + (9 * temp / 5 ) /n, humid/n)
+    return (endTimeStamp.strftime("%H:%M"), floor(32 + (9 * temp / 5 ) /n), floor(humid/n))
 
 
 def getTextArea(self, coords):

@@ -49,7 +49,13 @@ image_label.place(x=0,y=0)
 #    root.update()
 #    time.sleep(1)
 
-(temp, humid) = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5)
+(clock, temp, humid) = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5)
+for i in (clock, temp, humid):
+    print(i)
+    tempImg = Image.new('1',(1,1), color=0)
+    tempDraw = ImageDraw.Draw(tempImg)
+    (w, h) = tempDraw.textsize(f"{i}", fnt)
+    print(f"{w}, {h}")
 
 root.update()
 root.mainloop()
