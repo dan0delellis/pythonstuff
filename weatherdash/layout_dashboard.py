@@ -1,14 +1,46 @@
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 import time
+import mysql.connector as sql
+from datetime import timedelta, datetime
+
+def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1):
+    if(password is None):
+       db = sql.connect(host=host, user=user, database=database)
+    else:
+        db = sql.connect(host=host, user=user, database=database, password=password)
+
+    cursor = db.cursor()
+
+    datetimeString = "%Y-%m-%d %H:%M:%S"
+
+    endTimeStamp = datetime.now()
+    lookbackRange = lookback * timedelta(minutes=1)
+    startTimeStamp = endTimeStamp - lookbackRange
+
+    query = "SELECT temp, humid, pressure FROM readings WHERE `timestamp` BETWEEN %s AND %s"
+    var = (startTimeStamp, endTimeStamp)
+    cursor.execute(query, var)
+    result = cursor.fetchall()
+    temp = 0
+    humid = 0
+    n = 0
+    for i in result:
+        temp += i[0]
+        humid += i[1]
+        n += 1
+    return (32 + (9 * temp / 5 ) /n, humid/n)
+
+
+def getTextArea(self, coords):
+    boundryL = coords[0] + self.PadW
+    boundryT = coords[1] + self.PadH
+    boundryR = coords[2] - self.PadW
+    boundryB = coords[3] - self.PadH
+    return [boundryL, boundryT, boundryR, boundryB]
+
 
 class Layout:
     def __init__(self, width, height, debug):
-        def getTextArea(self, coords):
-            boundryL = coords[0] + self.PadW
-            boundryT = coords[1] + self.PadH
-            boundryR = coords[2] - self.PadW
-            boundryB = coords[3] - self.PadH
-            return [boundryL, boundryT, boundryR, boundryB]
 
         self.image = Image.new('RGB', (width, height), 'slategrey')
         self.draw = ImageDraw.Draw(self.image)

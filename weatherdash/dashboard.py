@@ -4,8 +4,9 @@ import argparse, os, tkinter
 from tkinter import ttk
 from tkinter.font import Font
 from PIL import Image,ImageDraw,ImageFont,ImageTk
-from layout_dashboard import Layout
+from layout_dashboard import *
 import time
+import mysql.connector as sql
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-fullscreen', '-w', dest='fullscreen', action='store_false')
@@ -38,15 +39,17 @@ layout = Layout(width, height, args.debug)
 readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
-root.update()
-i=0
-while (i<100):
-    image = Image.new('RGB', (100,100), "pink")
-    draw = ImageDraw.Draw(image, 'RGB')
-    draw.text((0,0), text=f"{i}", font=fnt, fill="black")
-    readout.paste(image)
-    i+=1
-    root.update()
-    time.sleep(1)
+#i=0
+#while (i<100):
+#    image = Image.new('RGB', (100,100), "pink")
+#    draw = ImageDraw.Draw(image, 'RGB')
+#    draw.text((0,0), text=f"{i}", font=fnt, fill="black")
+#    readout.paste(image)
+#    i+=1
+#    root.update()
+#    time.sleep(1)
 
+(temp, humid) = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5)
+
+root.update()
 root.mainloop()
