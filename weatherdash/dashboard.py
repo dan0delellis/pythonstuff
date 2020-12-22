@@ -50,6 +50,7 @@ image_label.place(x=0,y=0)
 #    time.sleep(1)
 
 data = {
+#this would be better if I made a 'BoxItem' class and wrote a constructor
     'temp': {},
     'humid': {},
     }
@@ -61,11 +62,11 @@ for i in data.keys():
 
 data['clock'] = {'reading': datetime.now().strftime("%H:%M")}
 
-print(time.time())
 for i in data.keys():
     tempImg = Image.new('1',(1,1), color=0)
     tempDraw = ImageDraw.Draw(tempImg)
     data[i]['dimensions'] = tempDraw.textsize(f"{data[i]['reading']}", fnt)
-print(time.time())
+    data[i]['img'] = #write a function that will generate a text image object
+
 root.update()
 root.mainloop()
