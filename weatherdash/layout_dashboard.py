@@ -4,30 +4,31 @@ import mysql.connector as sql
 from datetime import timedelta, datetime
 from math import floor
 
-def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1):
+def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="fuck"):
+#it would be better if this picked arbitrary data from the database given a time range
     if(password is None):
-       db = sql.connect(host=host, user=user, database=database)
+        db = sql.connect(host=host, user=user, database=database)
     else:
         db = sql.connect(host=host, user=user, database=database, password=password)
 
     cursor = db.cursor()
 
-    endTimeStamp = datetime.now()
     lookbackRange = lookback * timedelta(minutes=1)
     startTimeStamp = endTimeStamp - lookbackRange
 
-    query = "SELECT temp, humid, pressure FROM readings WHERE `timestamp` BETWEEN %s AND %s"
-    var = (startTimeStamp, endTimeStamp)
-    cursor.execute(query, var)
+    query = f'SELECT {dataSet} FROM readings WHERE timestamp >= "{startTimeStamp}" and timestamp <= "{endTimeStamp}"'
+    cursor.execute(query)
     result = cursor.fetchall()
-    temp = 0
-    humid = 0
+    val = 0
     n = 0
     for i in result:
-        temp += i[0]
-        humid += i[1]
+        val += i[0]
         n += 1
-    return (endTimeStamp.strftime("%H:%M"), floor(32 + (9 * temp / 5 ) /n), floor(humid/n))
+
+    return ( val / n )
+
+#define a class for display objects
+#attributes: name (clock, temp, whatever), data, location (x,y), image data
 
 
 def getTextArea(self, coords):
