@@ -4,6 +4,17 @@ import mysql.connector as sql
 from datetime import timedelta, datetime
 from math import floor
 
+class displayObject:
+    def __init__(self, name, data, location, font):
+        def drawText()
+            tempImg = Image.new('1',(1,1), color=0)
+            tempDraw = ImageDraw.Draw(tempImg)
+            self.dimensions = tempDraw.textsize(data, fnt)
+            self.img = Image.new('RGBA', self.dimensions, "pink")
+            draw = ImageDraw.draw(self.img)
+            draw.text((0,0), text=data, font=font, fill="black")
+
+
 def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="fuck"):
 #it would be better if this picked arbitrary data from the database given a time range
     if(password is None):
