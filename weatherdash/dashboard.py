@@ -19,7 +19,7 @@ root = tkinter.Tk()
 width = 800
 height = 480
 
-fnt = ImageFont.truetype("Charcoal.ttf", 40)
+fnt = ImageFont.truetype("coda.regular.ttf", 40)
 
 screenWidth = root.winfo_screenwidth()
 screenHeight = root.winfo_screenheight()
