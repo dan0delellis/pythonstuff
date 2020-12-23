@@ -60,13 +60,26 @@ for i in data.keys():
     data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
 
 
+#data['temp']['reading'] = f"{tempCovert(data['temp']['reading']}°F"
+data['temp']['reading'] = "123°F"
+#data['humid']['reading'] = f"round({round(data['humid']['reading']})%"
+data['humid']['reading'] = "99%"
+
 data['clock'] = {'reading': datetime.now().strftime("%H:%M")}
+
+#make a paste layer because PhotoImage doesn't support locational pasting
+pasteLayer = Image.new('RGBA', (readout.width(), readout.height()), (0,0,0,0))
+#make a thing that will barf out boxes onto the paste layer
 
 for i in data.keys():
     tempImg = Image.new('1',(1,1), color=0)
     tempDraw = ImageDraw.Draw(tempImg)
     data[i]['dimensions'] = tempDraw.textsize(f"{data[i]['reading']}", fnt)
-    data[i]['img'] = #write a function that will generate a text image object
+    data[i]['obj'] = displayObject(name=i, data=data[i]['reading'], font=fnt)
+    pasteLayer.paste(data[i]['obj'].img, getTextArea(layout, layout.coords[i])[:2])
+
+readout.paste(pasteLayer, (0,0))
+
 
 root.update()
 root.mainloop()

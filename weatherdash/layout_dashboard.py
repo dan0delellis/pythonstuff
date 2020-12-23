@@ -5,15 +5,18 @@ from datetime import timedelta, datetime
 from math import floor
 
 class displayObject:
-    def __init__(self, name, data, location, font):
-        def drawText()
-            tempImg = Image.new('1',(1,1), color=0)
-            tempDraw = ImageDraw.Draw(tempImg)
-            self.dimensions = tempDraw.textsize(data, fnt)
-            self.img = Image.new('RGBA', self.dimensions, "pink")
-            draw = ImageDraw.draw(self.img)
-            draw.text((0,0), text=data, font=font, fill="black")
+    def __init__(self, name, data, font):
+        tempImg = Image.new('1',(1,1), color=0)
+        tempDraw = ImageDraw.Draw(tempImg)
+        self.dimensions = tempDraw.textsize(data, font)
+        self.img = Image.new('RGBA', self.dimensions, "pink")
+        draw = ImageDraw.Draw(self.img)
+        draw.text((0,0), text=data, font=font, fill="black")
 
+
+def tempConvert(self, temp):
+    #someday this will convert into whatever format i want
+    return round(32 + (9 * temp / 5))
 
 def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="fuck"):
 #it would be better if this picked arbitrary data from the database given a time range
@@ -53,7 +56,7 @@ def getTextArea(self, coords):
 class Layout:
     def __init__(self, width, height, debug):
 
-        self.image = Image.new('RGB', (width, height), 'slategrey')
+        self.image = Image.new('RGBA', (width, height), 'slategrey')
         self.draw = ImageDraw.Draw(self.image)
         #define buffer sizes
 
@@ -91,27 +94,27 @@ class Layout:
         self.Graph3H = self.TotalHeight - self.Graph1H - self.Graph2H - ( 2 * self.BufferH )
 
         #define coordinates for each box
-        self.LPanL = self.LEFT
-        self.LPanR = self.LPanL + self.LPanW
-        self.ClockT = self.TOP
-        self.ClockB = self.TOP + self.BoxHeight
+        self.LPanL = floor(self.LEFT)
+        self.LPanR = floor(self.LPanL + self.LPanW)
+        self.ClockT = floor(self.TOP)
+        self.ClockB = floor(self.TOP + self.BoxHeight)
 
-        self.TempT = self.ClockB + self.BufferH
-        self.TempB = self.TempT + self.BoxHeight
+        self.TempT = floor(self.ClockB + self.BufferH)
+        self.TempB = floor(self.TempT + self.BoxHeight)
 
-        self.HumidT = self.TempB + self.BufferH
-        self.HumidB = self.HumidT + self.BoxHeight
+        self.HumidT = floor(self.TempB + self.BufferH)
+        self.HumidB = floor(self.HumidT + self.BoxHeight)
 
-        self.RPanL = self.LPanR + self.BufferW
-        self.RPanR = self.RIGHT
-        self.Graph1T = self.TOP
-        self.Graph1B = self.Graph1T + self.Graph1H
+        self.RPanL = floor(self.LPanR + self.BufferW)
+        self.RPanR = floor(self.RIGHT)
+        self.Graph1T = floor(self.TOP)
+        self.Graph1B = floor(self.Graph1T + self.Graph1H)
 
-        self.Graph2T = self.Graph1B + self.BufferH
-        self.Graph2B = self.Graph2T + self.Graph2H
+        self.Graph2T = floor(self.Graph1B + self.BufferH)
+        self.Graph2B = floor(self.Graph2T + self.Graph2H)
 
-        self.Graph3T = self.Graph2B + self.BufferH
-        self.Graph3B = self.BOTTOM
+        self.Graph3T = floor(self.Graph2B + self.BufferH)
+        self.Graph3B = floor(self.BOTTOM)
 
         self.coords = {
             'clock':    [self.LPanL, self.ClockT,  self.LPanR, self.ClockB],
