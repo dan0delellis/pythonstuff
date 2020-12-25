@@ -5,20 +5,17 @@ from datetime import timedelta, datetime
 from math import floor
 
 class displayObject:
-    def __init__(self, name, data, font):
-        tempImg = Image.new('1',(1,1), color=0)
-        tempDraw = ImageDraw.Draw(tempImg)
-        self.dimensions = tempDraw.textsize(data, font)
-        self.img = Image.new('RGBA', self.dimensions, "pink")
-        draw = ImageDraw.Draw(self.img)
+    def __init__(self, img, name, data, font):
+        draw = ImageDraw.Draw(img, 'RGBA')
+        self.dimensions = draw.textsize(data, font)
         draw.text((0,0), text=data, font=font, fill="black")
 
 
-def tempConvert(self, temp):
+def tempConvert(temp):
     #someday this will convert into whatever format i want
     return round(32 + (9 * temp / 5))
 
-def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="fuck"):
+def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="herpderp"):
 #it would be better if this picked arbitrary data from the database given a time range
     if(password is None):
         db = sql.connect(host=host, user=user, database=database)
@@ -54,9 +51,9 @@ def getTextArea(self, coords):
 
 
 class Layout:
-    def __init__(self, width, height, debug):
+    def __init__(self, width, height):
 
-        self.image = Image.new('RGBA', (width, height), 'slategrey')
+        self.image = Image.new('RGBA', (width, height), (255,0,255,255))
         self.draw = ImageDraw.Draw(self.image)
         #define buffer sizes
 
@@ -126,8 +123,3 @@ class Layout:
         }
 
         boxes = ['clock', 'temp', 'humid', 'graph1', 'graph2', 'graph3']
-        if debug:
-            for obj in boxes:
-                print(f"drawing: {obj}")
-                self.draw.rectangle(self.coords[obj], outline="black", fill="white")
-                self.draw.rectangle(getTextArea(self, self.coords[obj]), outline="black", fill="green")

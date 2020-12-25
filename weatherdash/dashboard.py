@@ -34,20 +34,11 @@ else:
 root.geometry(f"{width}x{height}")
 
 #create layout object
-layout = Layout(width, height, args.debug)
+layout = Layout(width, height)
 
 readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
-#i=0
-#while (i<100):
-#    image = Image.new('RGB', (100,100), "pink")
-#    draw = ImageDraw.Draw(image, 'RGB')
-#    draw.text((0,0), text=f"{i}", font=fnt, fill="black")
-#    readout.paste(image)
-#    i+=1
-#    root.update()
-#    time.sleep(1)
 
 data = {
 #this would be better if I made a 'BoxItem' class and wrote a constructor
@@ -56,27 +47,29 @@ data = {
     }
 
 for i in data.keys():
-    print(i)
     data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
 
 
-#data['temp']['reading'] = f"{tempCovert(data['temp']['reading']}°F"
-data['temp']['reading'] = "123°F"
-#data['humid']['reading'] = f"round({round(data['humid']['reading']})%"
-data['humid']['reading'] = "99%"
-
-data['clock'] = {'reading': datetime.now().strftime("%H:%M")}
+data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
+data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
+data['clock'] = {'display': datetime.now().strftime("%H:%M")}
 
 #make a paste layer because PhotoImage doesn't support locational pasting
-pasteLayer = Image.new('RGBA', (readout.width(), readout.height()), (0,0,0,0))
-#make a thing that will barf out boxes onto the paste layer
+pasteLayer = Image.new('RGB', (readout.width(), readout.height()), (0,0,255))
+pasteDraw = ImageDraw.Draw(pasteLayer)
+
+if args.debug:
+     boxes = ['clock', 'temp', 'humid', 'graph1', 'graph2', 'graph3']
+     for obj in boxes:
+        print(f"drawing: {obj}")
+        coords = layout.coords[obj]
+        pasteDraw.rectangle(coords, outline="black", fill="white")
+        pasteDraw.rectangle(getTextArea(layout, coords), outline="black", fill="green")
+     readout.paste(pasteLayer, (0,0))
 
 for i in data.keys():
-    tempImg = Image.new('1',(1,1), color=0)
-    tempDraw = ImageDraw.Draw(tempImg)
-    data[i]['dimensions'] = tempDraw.textsize(f"{data[i]['reading']}", fnt)
-    data[i]['obj'] = displayObject(name=i, data=data[i]['reading'], font=fnt)
-    pasteLayer.paste(data[i]['obj'].img, getTextArea(layout, layout.coords[i])[:2])
+    data[i]['obj'] = displayObject(name=i, data=data[i]['display'], font=fnt, img=pasteLayer)
+    pasteLayer = Image.alpha_composite(pasteLayer, data[i]['obj'])
 
 readout.paste(pasteLayer, (0,0))
 
