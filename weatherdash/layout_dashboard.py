@@ -4,12 +4,16 @@ import mysql.connector as sql
 from datetime import timedelta, datetime
 from math import floor
 
-class displayObject:
-    def __init__(self, img, name, data, font):
+def generateDisplayImg(name, data, font, size):
+#it might be worth it to make this a class instead, like 'DisplayObject', but only if the class contains:
+#1) source data
+#2) data to be processed for display
+#3) display location
+#4) type of object (text readout, graph, ext data)
+        img = Image.new('RGBA', size, (255,255,255,0))
         draw = ImageDraw.Draw(img, 'RGBA')
-        self.dimensions = draw.textsize(data, font)
         draw.text((0,0), text=data, font=font, fill="black")
-
+        return img
 
 def tempConvert(temp):
     #someday this will convert into whatever format i want
