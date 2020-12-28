@@ -55,12 +55,32 @@ def getTextArea(self, coords):
     boundryT = coords[1] + self.PadH
     boundryR = coords[2] - self.PadW
     boundryB = coords[3] - self.PadH
-    return [boundryL, boundryT, boundryR, boundryB]
+    return (boundryL, boundryT, boundryR, boundryB)
 
+def generateDisplayData(keys, font):
+#get this working, then move it to a different source file
+    data = {}
+
+    for i in keys:
+        data[i] = {}
+        data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
+        print(data[i]['reading'])
+
+    data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
+    data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
+    data['clock'] = {'display': datetime.now().strftime("%H:%M")}
+
+
+    for i in data.keys():
+        txt = data[i]['display']
+        tmpLayer = Image.new('1', (0,0), 1)
+        tmpDraw  = ImageDraw.Draw(tmpLayer, '1')
+        dimensions = tmpDraw.textsize(txt, font=font)
+        data[i]['img'] = generateDisplayImg(data=txt, font=font, size=dimensions)
+    return data
 
 class Layout:
     def __init__(self, width, height):
-
         self.image = Image.new('RGBA', (width, height), (255,0,255,255))
         self.draw = ImageDraw.Draw(self.image)
         #define buffer sizes

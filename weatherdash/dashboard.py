@@ -45,34 +45,34 @@ layout = Layout(width, height)
 
 #do this before root.update()
 
-def generateDisplayData(keys):
-#get this working, then move it to a different source file
-    data = {}
+#def generateDisplayData(keys):
+##get this working, then move it to a different source file
+#    data = {}
+#
+#    for i in keys:
+#        data[i] = {}
+#        data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
+#        print(data[i]['reading'])
+#
+#    data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
+#    data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
+#    data['clock'] = {'display': datetime.now().strftime("%H:%M")}
+#
+#
+#    for i in data.keys():
+#        txt = data[i]['display']
+#        tmpLayer = Image.new('1', (0,0), 1)
+#        tmpDraw  = ImageDraw.Draw(tmpLayer, '1')
+#        dimensions = tmpDraw.textsize(txt, font=fnt)
+#        data[i]['img'] = generateDisplayImg(data=txt, font=fnt, size=dimensions)
+#    return data
 
-    for i in keys:
-        data[i] = {}
-        data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
-        print(data[i]['reading'])
-
-    data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
-    data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
-    data['clock'] = {'display': datetime.now().strftime("%H:%M")}
-
-
-    for i in data.keys():
-        txt = data[i]['display']
-        tmpLayer = Image.new('1', (0,0), 1)
-        tmpDraw  = ImageDraw.Draw(tmpLayer, '1')
-        dimensions = tmpDraw.textsize(txt, font=fnt)
-        data[i]['img'] = generateDisplayImg(data=txt, font=fnt, size=dimensions)
-    return data
-
-data = generateDisplayData(['temp', 'humid'])
+data = generateDisplayData(keys=['temp', 'humid'], font=fnt)
 
 for i in data.keys():
     data[i]['boxCoordinates'] = layout.coords[i]
     data[i]['textArea'] = getTextArea(layout, data[i]['boxCoordinates'])
-    data[i]['pasteCoordinates'] = (data[i]['textArea'][0], data[i]['textArea'][1])
+    data[i]['pasteCoordinates'] = (data[i]['textArea'][0], data[i]['textArea'][1]) #this is maximum barf. Write a function to return this based on the boxCoordinates
     print(data[i]['pasteCoordinates'])
     if args.debug:
         layout.draw.rectangle(data[i]['boxCoordinates'], outline='black', fill='white')
@@ -83,20 +83,6 @@ for i in data.keys():
 readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
-
-#make a paste layer because PhotoImage doesn't support locational pasting
-
-#pasteLayer = Image.new('RGB', (readout.width(), readout.height()), (0,0,255))
-#pasteDraw = ImageDraw.Draw(pasteLayer)
-#if args.debug:
-#     boxes = ['clock', 'temp', 'humid', 'graph1', 'graph2', 'graph3']
-#     for obj in boxes:
-#        print(f"drawing: {obj}")
-#        coords = layout.coords[obj]
-#        pasteDraw.rectangle(coords, outline="black", fill="white")
-#        pasteDraw.rectangle(getTextArea(layout, coords), outline="black", fill="green")
-#     readout.paste(pasteLayer, (0,0))
-
 
 
 root.update()
