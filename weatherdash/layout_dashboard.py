@@ -4,7 +4,7 @@ import mysql.connector as sql
 from datetime import timedelta, datetime
 from math import floor
 
-def generateDisplayImg(name, data, font, size):
+def generateDisplayImg(data, font, size):
 #it might be worth it to make this a class instead, like 'DisplayObject', but only if the class contains:
 #1) source data
 #2) data to be processed for display
@@ -21,6 +21,7 @@ def tempConvert(temp):
 
 def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="herpderp"):
 #it would be better if this picked arbitrary data from the database given a time range
+    print(dataSet)
     if(password is None):
         db = sql.connect(host=host, user=user, database=database)
     else:
@@ -32,8 +33,10 @@ def getDataFromMysql(host="localhost", user="root", password=None, database="dat
     startTimeStamp = endTimeStamp - lookbackRange
 
     query = f'SELECT {dataSet} FROM readings WHERE timestamp >= "{startTimeStamp}" and timestamp <= "{endTimeStamp}"'
+    print(query)
     cursor.execute(query)
     result = cursor.fetchall()
+    print(len(result))
     val = 0
     n = 0
     for i in result:
@@ -47,6 +50,7 @@ def getDataFromMysql(host="localhost", user="root", password=None, database="dat
 
 
 def getTextArea(self, coords):
+#why is this not just a function of the Layout class? It's used exclusively for Layout objects
     boundryL = coords[0] + self.PadW
     boundryT = coords[1] + self.PadH
     boundryR = coords[2] - self.PadW
@@ -118,12 +122,12 @@ class Layout:
         self.Graph3B = floor(self.BOTTOM)
 
         self.coords = {
-            'clock':    [self.LPanL, self.ClockT,  self.LPanR, self.ClockB],
-            'temp':     [self.LPanL, self.TempT,   self.LPanR, self.TempB],
-            'humid':    [self.LPanL, self.HumidT,  self.LPanR, self.HumidB],
-            'graph1':   [self.RPanL, self.Graph1T, self.RPanR, self.Graph1B],
-            'graph2':   [self.RPanL, self.Graph2T, self.RPanR, self.Graph2B],
-            'graph3':   [self.RPanL, self.Graph3T, self.RPanR, self.BOTTOM],
+            'clock':    (self.LPanL, self.ClockT,  self.LPanR, self.ClockB),
+            'temp':     (self.LPanL, self.TempT,   self.LPanR, self.TempB),
+            'humid':    (self.LPanL, self.HumidT,  self.LPanR, self.HumidB),
+            'graph1':   (self.RPanL, self.Graph1T, self.RPanR, self.Graph1B),
+            'graph2':   (self.RPanL, self.Graph2T, self.RPanR, self.Graph2B),
+            'graph3':   (self.RPanL, self.Graph3T, self.RPanR, self.BOTTOM),
         }
 
         boxes = ['clock', 'temp', 'humid', 'graph1', 'graph2', 'graph3']

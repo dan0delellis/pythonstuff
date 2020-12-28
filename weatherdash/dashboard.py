@@ -44,16 +44,15 @@ root.geometry(f"{width}x{height}")
 layout = Layout(width, height)
 
 #do this before root.update()
-#readout = ImageTk.PhotoImage(image=layout.image)
-#image_label = tkinter.ttk.Label(root, image = readout)
-#image_label.place(x=0,y=0)
 
 def generateDisplayData(keys):
 #get this working, then move it to a different source file
     data = {}
 
     for i in keys:
+        data[i] = {}
         data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
+        print(data[i]['reading'])
 
     data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
     data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
@@ -63,11 +62,27 @@ def generateDisplayData(keys):
     for i in data.keys():
         txt = data[i]['display']
         tmpLayer = Image.new('1', (0,0), 1)
-        tmpDraw  = ImageDraw.Draw(tmpLayer, 1)
+        tmpDraw  = ImageDraw.Draw(tmpLayer, '1')
         dimensions = tmpDraw.textsize(txt, font=fnt)
-        data[i]['obj'] = displayObject(name=i, data=txt, font=fnt, img=pasteLayer, size=dimensions)
+        data[i]['img'] = generateDisplayImg(data=txt, font=fnt, size=dimensions)
+    return data
 
 data = generateDisplayData(['temp', 'humid'])
+
+for i in data.keys():
+    data[i]['boxCoordinates'] = layout.coords[i]
+    data[i]['textArea'] = getTextArea(layout, data[i]['boxCoordinates'])
+    data[i]['pasteCoordinates'] = (data[i]['textArea'][0], data[i]['textArea'][1])
+    print(data[i]['pasteCoordinates'])
+    if args.debug:
+        layout.draw.rectangle(data[i]['boxCoordinates'], outline='black', fill='white')
+        layout.draw.rectangle(data[i]['textArea'], outline='black', fill='cadetblue')
+    layout.image.alpha_composite(data[i]['img'], dest=data[i]['pasteCoordinates'])
+
+
+readout = ImageTk.PhotoImage(image=layout.image)
+image_label = tkinter.ttk.Label(root, image = readout)
+image_label.place(x=0,y=0)
 
 #make a paste layer because PhotoImage doesn't support locational pasting
 
@@ -82,9 +97,6 @@ data = generateDisplayData(['temp', 'humid'])
 #        pasteDraw.rectangle(getTextArea(layout, coords), outline="black", fill="green")
 #     readout.paste(pasteLayer, (0,0))
 
-    pasteLayer = Image.alpha_composite(pasteLayer, data[i]['obj'])
-
-readout.paste(pasteLayer, (0,0))
 
 
 root.update()
