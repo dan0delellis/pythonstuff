@@ -43,37 +43,13 @@ root.geometry(f"{width}x{height}")
 #create layout object
 layout = Layout(width, height)
 
-#do this before root.update()
-
-#def generateDisplayData(keys):
-##get this working, then move it to a different source file
-#    data = {}
-#
-#    for i in keys:
-#        data[i] = {}
-#        data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
-#        print(data[i]['reading'])
-#
-#    data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
-#    data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
-#    data['clock'] = {'display': datetime.now().strftime("%H:%M")}
-#
-#
-#    for i in data.keys():
-#        txt = data[i]['display']
-#        tmpLayer = Image.new('1', (0,0), 1)
-#        tmpDraw  = ImageDraw.Draw(tmpLayer, '1')
-#        dimensions = tmpDraw.textsize(txt, font=fnt)
-#        data[i]['img'] = generateDisplayImg(data=txt, font=fnt, size=dimensions)
-#    return data
-
 data = generateDisplayData(keys=['temp', 'humid'], font=fnt)
 
 for i in data.keys():
+#move this to its own display function and make it call itself with a scheduler
     data[i]['boxCoordinates'] = layout.coords[i]
     data[i]['textArea'] = getTextArea(layout, data[i]['boxCoordinates'])
     data[i]['pasteCoordinates'] = (data[i]['textArea'][0], data[i]['textArea'][1]) #this is maximum barf. Write a function to return this based on the boxCoordinates
-    print(data[i]['pasteCoordinates'])
     if args.debug:
         layout.draw.rectangle(data[i]['boxCoordinates'], outline='black', fill='white')
         layout.draw.rectangle(data[i]['textArea'], outline='black', fill='cadetblue')

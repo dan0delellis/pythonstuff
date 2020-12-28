@@ -8,7 +8,7 @@ def generateDisplayImg(data, font, size):
 #it might be worth it to make this a class instead, like 'DisplayObject', but only if the class contains:
 #1) source data
 #2) data to be processed for display
-#3) display location
+#3) display location, including various boxes
 #4) type of object (text readout, graph, ext data)
         img = Image.new('RGBA', size, (255,255,255,0))
         draw = ImageDraw.Draw(img, 'RGBA')
@@ -21,7 +21,6 @@ def tempConvert(temp):
 
 def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="herpderp"):
 #it would be better if this picked arbitrary data from the database given a time range
-    print(dataSet)
     if(password is None):
         db = sql.connect(host=host, user=user, database=database)
     else:
@@ -33,10 +32,8 @@ def getDataFromMysql(host="localhost", user="root", password=None, database="dat
     startTimeStamp = endTimeStamp - lookbackRange
 
     query = f'SELECT {dataSet} FROM readings WHERE timestamp >= "{startTimeStamp}" and timestamp <= "{endTimeStamp}"'
-    print(query)
     cursor.execute(query)
     result = cursor.fetchall()
-    print(len(result))
     val = 0
     n = 0
     for i in result:
@@ -64,7 +61,6 @@ def generateDisplayData(keys, font):
     for i in keys:
         data[i] = {}
         data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
-        print(data[i]['reading'])
 
     data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
     data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
