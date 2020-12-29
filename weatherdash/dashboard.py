@@ -59,13 +59,18 @@ readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
 
+img_old = layout.image
+
+#in order to see live updates on the screen, you must update the readout object before running root.update()
+#readout.paste(img) is the easiest way to do this
 derp =ImageDraw.Draw(layout.image)
 stuff = ['herp', 'derp', 'ooga', 'booga']
-
+print("herp")
 for i in stuff:
-    derp.drawtext((500,500), text=i, font=fnt)
+    derp.text((500,500), text=i, font=fnt)
+    readout.paste(layout.image)
     time.sleep(1)
     root.update()
+print("derp")
 
-root.update()
 root.mainloop()
