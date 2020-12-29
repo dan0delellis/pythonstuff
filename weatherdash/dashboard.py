@@ -49,7 +49,7 @@ for i in data.keys():
 #move this to its own display function and make it call itself with a scheduler
     data[i]['boxCoordinates'] = layout.coords[i]
     data[i]['textArea'] = getTextArea(layout, data[i]['boxCoordinates'])
-    data[i]['pasteCoordinates'] = (data[i]['textArea'][0], data[i]['textArea'][1]) #this is maximum barf. Write a function to return this based on the boxCoordinates
+    data[i]['pasteCoordinates'] = getCenteredPasteCoords(data[i]['textArea'], data[i]['img'])
     if args.debug:
         layout.draw.rectangle(data[i]['boxCoordinates'], outline='black', fill='white')
         layout.draw.rectangle(data[i]['textArea'], outline='black', fill='cadetblue')

@@ -4,6 +4,27 @@ import mysql.connector as sql
 from datetime import timedelta, datetime
 from math import floor
 
+def generateDisplayData(keys, font):
+#get this working, then move it to a different source file
+    data = {}
+
+    for i in keys:
+        data[i] = {}
+        data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
+
+    data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
+    data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
+    data['clock'] = {'display': datetime.now().strftime("%H:%M")}
+
+
+    for i in data.keys():
+        txt = data[i]['display']
+        tmpLayer = Image.new('1', (0,0), 1)
+        tmpDraw  = ImageDraw.Draw(tmpLayer, '1')
+        dimensions = tmpDraw.textsize(txt, font=font, stroke_width=1)
+        data[i]['img'] = generateDisplayImg(data=txt, font=font, size=dimensions)
+    return data
+
 def generateDisplayImg(data, font, size):
 #it might be worth it to make this a class instead, like 'DisplayObject', but only if the class contains:
 #1) source data
@@ -12,12 +33,28 @@ def generateDisplayImg(data, font, size):
 #4) type of object (text readout, graph, ext data)
         img = Image.new('RGBA', size, (255,255,255,0))
         draw = ImageDraw.Draw(img, 'RGBA')
-        draw.text((0,0), text=data, font=font, fill="black")
-        return img
+        draw.text((0,0), text=data, font=font, fill="black", stroke_width=1, stroke_fill="white")
+        imgbox = img.getbbox()
+        cropped = img.crop(imgbox)
+        return cropped
 
 def tempConvert(temp):
     #someday this will convert into whatever format i want
     return round(32 + (9 * temp / 5))
+
+def getCenteredPasteCoords(coords, obj):
+    #dimensions of object to be pasted
+    w2, h2 = obj.size
+
+    #total width of text area
+    w1 = coords[2] - coords[0]
+
+    #total height of text area
+    h1 = coords[3] - coords[1]
+
+    x = floor(coords[0] + (w1 - w2) / 2)
+    y = floor(coords[1] + (h1 - h2) / 2)
+    return (x, y)
 
 def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="herpderp"):
 #it would be better if this picked arbitrary data from the database given a time range
@@ -54,26 +91,6 @@ def getTextArea(self, coords):
     boundryB = coords[3] - self.PadH
     return (boundryL, boundryT, boundryR, boundryB)
 
-def generateDisplayData(keys, font):
-#get this working, then move it to a different source file
-    data = {}
-
-    for i in keys:
-        data[i] = {}
-        data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
-
-    data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
-    data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
-    data['clock'] = {'display': datetime.now().strftime("%H:%M")}
-
-
-    for i in data.keys():
-        txt = data[i]['display']
-        tmpLayer = Image.new('1', (0,0), 1)
-        tmpDraw  = ImageDraw.Draw(tmpLayer, '1')
-        dimensions = tmpDraw.textsize(txt, font=font)
-        data[i]['img'] = generateDisplayImg(data=txt, font=font, size=dimensions)
-    return data
 
 class Layout:
     def __init__(self, width, height):
