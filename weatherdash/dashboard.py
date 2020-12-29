@@ -14,7 +14,7 @@ parser.set_defaults(fullscreen=False, debug=False)
 args = parser.parse_args()
 
 
-fnt = ImageFont.truetype("coda.regular.ttf", 40)
+fnt = ImageFont.truetype("coda.regular.ttf", 78)
 
 #how to do transparencies:
 #define a canvass based on width, height as defined above. type RGBA.
