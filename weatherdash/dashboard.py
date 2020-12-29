@@ -27,7 +27,6 @@ root = tkinter.Tk()
 width = 800
 height = 480
 
-
 screenWidth = root.winfo_screenwidth()
 screenHeight = root.winfo_screenheight()
 
@@ -60,6 +59,13 @@ readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
 
+derp =ImageDraw.Draw(layout.image)
+stuff = ['herp', 'derp', 'ooga', 'booga']
+
+for i in stuff:
+    derp.drawtext((500,500), text=i, font=fnt)
+    time.sleep(1)
+    root.update()
 
 root.update()
 root.mainloop()
