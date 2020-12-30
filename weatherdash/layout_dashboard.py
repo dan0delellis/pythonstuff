@@ -4,17 +4,27 @@ import mysql.connector as sql
 from datetime import timedelta, datetime
 from math import floor
 
+def displayDash(layout, data, debug):
+    for i in data.keys():
+        data[i]['boxCoordinates'] = layout.coords[i]
+        data[i]['textArea'] = getTextArea(layout, data[i]['boxCoordinates'])
+        data[i]['pasteCoordinates'] = getCenteredPasteCoords(data[i]['textArea'], data[i]['img'])
+        if debug:
+            layout.draw.rectangle(data[i]['boxCoordinates'], outline='black', fill='white')
+            layout.draw.rectangle(data[i]['textArea'], outline='black', fill='cadetblue')
+        layout.image.alpha_composite(data[i]['img'], dest=data[i]['pasteCoordinates'])
+    return layout.image
+
 def generateDisplayData(keys, font):
-#get this working, then move it to a different source file
     data = {}
 
     for i in keys:
         data[i] = {}
-        data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback=5, dataSet=i)
+        data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback="live", dataSet=i, table="readings")
 
     data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
     data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
-    data['clock'] = {'display': datetime.now().strftime("%H:%M")}
+    data['clock'] = {'display': datetime.now().strftime("%H:%M:%S")}
 
 
     for i in data.keys():
@@ -40,7 +50,7 @@ def generateDisplayImg(data, font, size):
 
 def tempConvert(temp):
     #someday this will convert into whatever format i want
-    return round(32 + (9 * temp / 5))
+    return round(32 + (9 * temp / 5), 2)
 
 def getCenteredPasteCoords(coords, obj):
     #dimensions of object to be pasted
@@ -56,7 +66,7 @@ def getCenteredPasteCoords(coords, obj):
     y = floor(coords[1] + (h1 - h2) / 2)
     return (x, y)
 
-def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="herpderp"):
+def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="herpderp", table="data"):
 #it would be better if this picked arbitrary data from the database given a time range
     if(password is None):
         db = sql.connect(host=host, user=user, database=database)
@@ -64,11 +74,13 @@ def getDataFromMysql(host="localhost", user="root", password=None, database="dat
         db = sql.connect(host=host, user=user, database=database, password=password)
 
     cursor = db.cursor()
+    if(lookback == "live"):
+        query = f'SELECT {dataSet} FROM {table} order by id desc limit 1'
+    else:
+        lookbackRange = lookback * timedelta(minutes=1)
+        startTimeStamp = endTimeStamp - lookbackRange
+        query = f'SELECT {dataSet} FROM readings WHERE timestamp >= "{startTimeStamp}" and timestamp <= "{endTimeStamp}"'
 
-    lookbackRange = lookback * timedelta(minutes=1)
-    startTimeStamp = endTimeStamp - lookbackRange
-
-    query = f'SELECT {dataSet} FROM readings WHERE timestamp >= "{startTimeStamp}" and timestamp <= "{endTimeStamp}"'
     cursor.execute(query)
     result = cursor.fetchall()
     val = 0

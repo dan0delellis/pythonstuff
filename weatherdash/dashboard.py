@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 from math import floor
 import argparse, os, tkinter
 from tkinter import ttk
@@ -12,7 +13,6 @@ parser.add_argument('--fullscreen', '-f', dest='fullscreen', action='store_true'
 parser.add_argument('--debug', '-d', dest='debug', action='store_true')
 parser.set_defaults(fullscreen=False, debug=False)
 args = parser.parse_args()
-
 
 fnt = ImageFont.truetype("coda.regular.ttf", 78)
 
@@ -41,36 +41,18 @@ root.geometry(f"{width}x{height}")
 
 #create layout object
 layout = Layout(width, height)
-
 data = generateDisplayData(keys=['temp', 'humid'], font=fnt)
-
-for i in data.keys():
-#move this to its own display function and make it call itself with a scheduler
-    data[i]['boxCoordinates'] = layout.coords[i]
-    data[i]['textArea'] = getTextArea(layout, data[i]['boxCoordinates'])
-    data[i]['pasteCoordinates'] = getCenteredPasteCoords(data[i]['textArea'], data[i]['img'])
-    if args.debug:
-        layout.draw.rectangle(data[i]['boxCoordinates'], outline='black', fill='white')
-        layout.draw.rectangle(data[i]['textArea'], outline='black', fill='cadetblue')
-    layout.image.alpha_composite(data[i]['img'], dest=data[i]['pasteCoordinates'])
-
+layout.image = displayDash(layout, data, args.debug)
 
 readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
 
-img_old = layout.image
-
-#in order to see live updates on the screen, you must update the readout object before running root.update()
-#readout.paste(img) is the easiest way to do this
-derp =ImageDraw.Draw(layout.image)
-stuff = ['herp', 'derp', 'ooga', 'booga']
-print("herp")
-for i in stuff:
-    derp.text((500,500), text=i, font=fnt)
+while True:
+    data = generateDisplayData(keys=['temp', 'humid'], font=fnt)
+    layout.image = displayDash(layout, data, args.debug)
     readout.paste(layout.image)
-    time.sleep(1)
     root.update()
-print("derp")
+    time.sleep(1)
 
 root.mainloop()
