@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 from math import floor
 
 def displayDash(layout, data, debug):
+    layout.image = Image.new('RGBA', (layout.image.width, layout.image.height), (255,0,255,255))
     for i in data.keys():
         data[i]['boxCoordinates'] = layout.coords[i]
         data[i]['textArea'] = getTextArea(layout, data[i]['boxCoordinates'])
@@ -106,7 +107,7 @@ def getTextArea(self, coords):
 
 class Layout:
     def __init__(self, width, height):
-        self.image = Image.new('RGBA', (width, height), (255,0,255,255))
+        self.image = Image.new('RGBA', (width, height), (0,0,0,0))
         self.draw = ImageDraw.Draw(self.image)
         #define buffer sizes
 
