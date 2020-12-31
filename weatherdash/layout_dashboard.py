@@ -25,10 +25,12 @@ def generateDisplayData(keys, font, debug):
         data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback="live", dataSet=i, table="readings")
 
     if(debug):
+        #temp, humidity are rounded to 2 decimal places, time is displayed with seconds
         data['temp']['display'] = "{}°F".format(round(tempConvert(temp=data['temp']['reading']),2))
         data['humid']['display'] = "{}%".format(round(data['humid']['reading'],2))
         data['clock'] = {'display': datetime.now().strftime("%H:%M:%S")}
     else:
+        #temp, humidty are rounded to integer, time is HH:MM
         data['temp']['display'] = "{}°F".format(round(tempConvert(temp=data['temp']['reading'])))
         data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
         data['clock'] = {'display': datetime.now().strftime("%H:%M")}
