@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 from math import floor
-import argparse, os, tkinter
+import argparse, os, tkinter, time, sched
 from tkinter import ttk
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 from layout_dashboard import *
-import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-fullscreen', '-w', dest='fullscreen', action='store_false')
@@ -13,6 +12,11 @@ parser.add_argument('--fullscreen', '-f', dest='fullscreen', action='store_true'
 parser.add_argument('--debug', '-d', dest='debug', action='store_true')
 parser.set_defaults(fullscreen=False, debug=False)
 args = parser.parse_args()
+
+if(args.debug):
+    delay = 1
+else:
+    delay = 3600
 
 fnt = ImageFont.truetype("coda.regular.ttf", 78)
 
@@ -41,18 +45,23 @@ root.geometry(f"{width}x{height}")
 
 #create layout object
 layout = Layout(width, height)
-data = generateDisplayData(keys=['temp', 'humid'], font=fnt)
-layout.image = displayDash(layout, data, args.debug)
+#data = generateDisplayData(keys=['temp', 'humid'], font=fnt)
+#layout.image = displayDash(layout, data, args.debug)
 
 readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
 
-while True:
-    data = generateDisplayData(keys=['temp', 'humid'], font=fnt)
+s = sched.scheduler(time.time, time.sleep)
+
+def updateDisplay():
+    s.enter(delay,1,updateDisplay)
+    data = generateDisplayData(keys=['temp', 'humid'], font=fnt, debug=args.debug)
     layout.image = displayDash(layout, data, args.debug)
     readout.paste(layout.image)
     root.update()
-    time.sleep(1)
+
+s.enter(0,1,updateDisplay)
+s.run()
 
 root.mainloop()

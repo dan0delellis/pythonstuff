@@ -6,6 +6,7 @@ from math import floor
 
 def displayDash(layout, data, debug):
     layout.image = Image.new('RGBA', (layout.image.width, layout.image.height), (255,0,255,255))
+    layout.image.paste(layout.background) # = layout.background #Image.new('RGBA', (layout.image.width, layout.image.height), (255,0,255,255))
     for i in data.keys():
         data[i]['boxCoordinates'] = layout.coords[i]
         data[i]['textArea'] = getTextArea(layout, data[i]['boxCoordinates'])
@@ -16,17 +17,21 @@ def displayDash(layout, data, debug):
         layout.image.alpha_composite(data[i]['img'], dest=data[i]['pasteCoordinates'])
     return layout.image
 
-def generateDisplayData(keys, font):
+def generateDisplayData(keys, font, debug):
     data = {}
 
     for i in keys:
         data[i] = {}
         data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback="live", dataSet=i, table="readings")
 
-    data['temp']['display'] = "{}°F".format(tempConvert(temp=data['temp']['reading']))
-    data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
-    data['clock'] = {'display': datetime.now().strftime("%H:%M:%S")}
-
+    if(debug):
+        data['temp']['display'] = "{}°F".format(round(tempConvert(temp=data['temp']['reading']),2))
+        data['humid']['display'] = "{}%".format(round(data['humid']['reading'],2))
+        data['clock'] = {'display': datetime.now().strftime("%H:%M:%S")}
+    else:
+        data['temp']['display'] = "{}°F".format(round(tempConvert(temp=data['temp']['reading'])))
+        data['humid']['display'] = "{}%".format(round(data['humid']['reading']))
+        data['clock'] = {'display': datetime.now().strftime("%H:%M")}
 
     for i in data.keys():
         txt = data[i]['display']
@@ -51,7 +56,7 @@ def generateDisplayImg(data, font, size):
 
 def tempConvert(temp):
     #someday this will convert into whatever format i want
-    return round(32 + (9 * temp / 5), 2)
+    return 32 + (9 * temp / 5)
 
 def getCenteredPasteCoords(coords, obj):
     #dimensions of object to be pasted
@@ -108,6 +113,10 @@ def getTextArea(self, coords):
 class Layout:
     def __init__(self, width, height):
         self.image = Image.new('RGBA', (width, height), (0,0,0,0))
+        load = Image.open("bliss.jpg")
+        load = load.resize((width, height), Image.ANTIALIAS)
+        self.background = load.convert("RGBA")
+        self.image = self.background
         self.draw = ImageDraw.Draw(self.image)
         #define buffer sizes
 
