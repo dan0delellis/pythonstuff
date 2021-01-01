@@ -16,7 +16,7 @@ args = parser.parse_args()
 if(args.debug):
     delay = 1
 else:
-    delay = 3600
+    delay = 60
 
 fnt = ImageFont.truetype("coda.regular.ttf", 78)
 
@@ -45,12 +45,19 @@ root.geometry(f"{width}x{height}")
 
 #create layout object
 layout = Layout(width, height)
-#data = generateDisplayData(keys=['temp', 'humid'], font=fnt)
-#layout.image = displayDash(layout, data, args.debug)
+data = generateDisplayData(keys=['temp', 'humid'], font=fnt, debug=args.debug)
+layout.image = displayDash(layout, data, args.debug)
 
 readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
+root.update()
+#wait until wallclock time rolls over to update the display the first time
+while True:
+    if(time.strftime("%S") == "00"):
+        break
+    else:
+        time.sleep(0.9)
 
 s = sched.scheduler(time.time, time.sleep)
 
