@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from math import floor
-import argparse, os, tkinter, time, sched
+import argparse, os, tkinter, time, schedule
 from tkinter import ttk
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 from layout_dashboard import *
@@ -18,7 +18,7 @@ if(args.debug):
 else:
     delay = 60
 
-fnt = ImageFont.truetype("coda.regular.ttf", 78)
+fnt = ImageFont.truetype("coda.regular.ttf", 100)
 
 #how to do transparencies:
 #define a canvass based on width, height as defined above. type RGBA.
@@ -52,23 +52,21 @@ readout = ImageTk.PhotoImage(image=layout.image)
 image_label = tkinter.ttk.Label(root, image = readout)
 image_label.place(x=0,y=0)
 root.update()
+
 #wait until wallclock time rolls over to update the display the first time
-while True:
-    if(time.strftime("%S") == "00"):
-        break
-    else:
-        time.sleep(0.9)
-
-s = sched.scheduler(time.time, time.sleep)
-
 def updateDisplay():
-    s.enter(delay,1,updateDisplay)
     data = generateDisplayData(keys=['temp', 'humid'], font=fnt, debug=args.debug)
     layout.image = displayDash(layout, data, args.debug)
     readout.paste(layout.image)
     root.update()
+    print(time.time())
 
-s.enter(0,1,updateDisplay)
-s.run()
+#This is dumb as hell but honestly it works better than any scheduler so ¯\_(ツ)_/¯
+while True:
+    if(time.strftime("%S") == "00"):
+        updateDisplay()
+        time.sleep(50.0)
+    else:
+        time.sleep(0.9)
 
 root.mainloop()
