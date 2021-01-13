@@ -6,7 +6,7 @@ After=network.target network-online.target
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/sbin/weather-stats-to-redis.py
+ExecStart=/usr/sbin/weather_json_to_sql.py
 Restart=on-failure
 
 [Install]
