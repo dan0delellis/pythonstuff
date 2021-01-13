@@ -11,9 +11,12 @@ def displayDash(layout, data, debug):
         data[i]['boxCoordinates'] = layout.coords[i]
         data[i]['textArea'] = getTextArea(layout, data[i]['boxCoordinates'])
         data[i]['pasteCoordinates'] = getCenteredPasteCoords(data[i]['textArea'], data[i]['img'])
+        print(data[i])
         if debug:
-            layout.draw.rectangle(data[i]['boxCoordinates'], outline='black', fill='white')
-            layout.draw.rectangle(data[i]['textArea'], outline='black', fill='cadetblue')
+            print("drawin box")
+            layout.draw.rectangle(data[i]['boxCoordinates'], outline='black', fill=(255,255,255,255))
+            print("drawin box2")
+            layout.draw.rectangle(data[i]['textArea'], outline='black', fill=(255,255,0,255))
         layout.image.alpha_composite(data[i]['img'], dest=data[i]['pasteCoordinates'])
     return layout.image
 
@@ -22,7 +25,10 @@ def generateDisplayData(keys, font, debug):
 
     for i in keys:
         data[i] = {}
-        data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback="live", dataSet=i, table="readings")
+        if (i == "temp" || i == "humid"):
+            data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback="live", dataSet=i, table="readings")
+        if ( 'graph' in i):
+            print("GOTTA DRAW A BOX HERE")
 
     if(debug):
         #temp, humidity are rounded to 2 decimal places, time is displayed with seconds
@@ -72,7 +78,7 @@ def getCenteredPasteCoords(coords, obj):
 
     x = floor(coords[0] + (w1 - w2) / 2)
     y = floor(coords[1] + (h1 - h2) / 2)
-    return (x, y)
+    return (max(x,0), max(y,0))
 
 def getDataFromMysql(host="localhost", user="root", password=None, database="data", lookback=1, endTimeStamp=datetime.now(), dataSet="herpderp", table="data"):
 #it would be better if this picked arbitrary data from the database given a time range
