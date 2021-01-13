@@ -1,0 +1,13 @@
+[Unit]
+Description=weather-stats-to-redis
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/sbin/weather-stats-to-redis.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

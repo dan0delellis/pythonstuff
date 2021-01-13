@@ -22,25 +22,28 @@ apiKey = open("apikey", "r").read().strip()
 
 url = f"https://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={apiKey}&units=standard"
 
-curl_response = requests.get(url)
-curl_response.encoding = 'utf-8'
-data = curl_response.text
+def getJson():
+    s.enter(time.time() + 600, 0, getJson)
+    curl_response = requests.get(url)
+    curl_response.encoding = 'utf-8'
+    data = curl_response.text
+    json = curl_response.json()
 
-timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-query = f"INSERT into {sqlTable} (timestamp, location_code, report_json ) VALUES ( %s, %s, %s)"
-val = (timestamp, cityID, data)
-mycursor.execute(query, val)
+#note to self: next time you start a project, decide on either UTC datetime OR unix epoc. don't mix them.
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    query = f"INSERT into {sqlTable} (timestamp, location_code, report_json ) VALUES ( %s, %s, %s)"
+    val = (timestamp, cityID, data)
+    mycursor.execute(query, val)
 
+    temp = json["main"]["temp"] - 273.15
+    humid = json["main"]["humidity"]
+    pressure = json["main"]["pressure"]
+    avgTS = json["dt"]
+    location = json["name"]
+    averagesQuery = "INSERT into averages (timestamp, location, temp, humid, pressure) VALUES (%s, %s, %s, %s, %s)"
+    values = (avgTS, location, temp, humid, pressure)
+    mycursor.execute(averagesQuery, values)
+    db.commit()
 
-json = curl_response.json()
-temp = json["main"]["temp"] - 273.15
-humid = json["main"]["humidity"]
-pressure = json["main"]["pressure"]
-avgTS = json["dt"]
-location = json["name"]
-averagesQuery = "INSERT into averages (timestamp, location, temp, humid, pressure) VALUES (%s, %s, %s, %s, %s)"
-values = (avgTS, location, temp, humid, pressure)
-mycursor.execute(averagesQuery, values)
-db.commit()
-
-
+s.enter(1,0,getJson)
+s.run()
