@@ -23,7 +23,7 @@ apiKey = open("apikey", "r").read().strip()
 url = f"https://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={apiKey}&units=standard"
 
 def getJson():
-    s.enter(time.time() + 600, 0, getJson)
+    s.enter(600, 0, getJson)
     curl_response = requests.get(url)
     curl_response.encoding = 'utf-8'
     data = curl_response.text
