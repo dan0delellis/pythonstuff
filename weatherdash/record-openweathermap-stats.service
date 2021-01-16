@@ -1,7 +1,7 @@
 [Unit]
 Description=openweathermap-json-to-sql
 Wants=network-online.target
-After=network.target network-online.target
+After=network.target network-online.target weather-stats.service
 
 [Service]
 Type=simple
