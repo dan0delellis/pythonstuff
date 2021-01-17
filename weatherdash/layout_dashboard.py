@@ -20,15 +20,36 @@ def displayDash(layout, data, debug):
         layout.image.alpha_composite(data[i]['img'], dest=data[i]['pasteCoordinates'])
     return layout.image
 
-def generateDisplayData(keys, font, debug):
+def generateGraphUrl(key, coords):
+    graphNames = {
+        'graph1': 'temp',
+        'graph2': 'humid',
+        'graph3': 'pressure'
+    }
+    height = coords[1]-coords[3]
+    width = coords[2] - coords[0]
+
+    grafanaUrl = "http://10.0.0.13:3000"
+    instanceId: "7cMGJ--Gk"
+    tz = "America%2FLos_Angeles"
+
+    end = floor(time.time())
+    start = end - 86400
+
+    url = f"{grafanaUrl}/render/d-solo/{instanceId}/{graphNames[key]}?orgId=1&refresh=10s&from={start}&to={end}&theme=light&panelId=1&width={width}&height={height}&tz={tz}"
+
+    return url
+
+
+def generateDisplayData(keys, font, debug, coords):
     data = {}
 
     for i in keys:
         data[i] = {}
-        if (i == "temp" || i == "humid"):
+        if (i == "temp" or i == "humid"):
             data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback="live", dataSet=i, table="readings")
         if ( 'graph' in i):
-            print("GOTTA DRAW A BOX HERE")
+            data[i]['url'] = generateGraphUrl(i, coords[i])
 
     if(debug):
         #temp, humidity are rounded to 2 decimal places, time is displayed with seconds
