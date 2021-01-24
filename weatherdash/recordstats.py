@@ -3,6 +3,7 @@ import board, busio, adafruit_bme280, time, sched
 from math import floor
 import mysql.connector
 
+#to do: make these arguments
 database = "climate"
 table = "readings"
 location = "apartment"
@@ -11,7 +12,8 @@ s = sched.scheduler(time.time, time.sleep)
 db = mysql.connector.connect(host="10.0.0.2", user="sensorsrecord", password="donkeyboner", database="climate")
 mycursor = db.cursor()
 i2c = busio.I2C(board.SCL, board.SDA)
-bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
+#I may have fried my sensor by not paying attention to the 'Non-condensing' part of the humidity safety indication so now it reports on 0x76.
+bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c,address=0x76)
 
 def getData():
     s.enter(3,1,getData)
