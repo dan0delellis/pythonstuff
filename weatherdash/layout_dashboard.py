@@ -1,5 +1,6 @@
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 import time
+from urllib.request import urlopen
 import mysql.connector as sql
 from datetime import timedelta, datetime
 from math import floor
@@ -26,11 +27,11 @@ def generateGraphUrl(key, coords):
         'graph2': 'humid',
         'graph3': 'pressure'
     }
-    height = coords[1]-coords[3]
+    height = coords[3]-coords[1]
     width = coords[2] - coords[0]
 
-    grafanaUrl = "http://10.0.0.13:3000"
-    instanceId: "7cMGJ--Gk"
+    grafanaUrl = "http://10.0.0.18:3000"
+    instanceId= "mZHPfsfGk"
     tz = "America%2FLos_Angeles"
 
     end = floor(time.time())
@@ -63,11 +64,17 @@ def generateDisplayData(keys, font, debug, coords):
         data['clock'] = {'display': datetime.now().strftime("%H:%M")}
 
     for i in data.keys():
-        txt = data[i]['display']
         tmpLayer = Image.new('1', (0,0), 1)
         tmpDraw  = ImageDraw.Draw(tmpLayer, '1')
-        dimensions = tmpDraw.textsize(txt, font=font, stroke_width=1)
-        data[i]['img'] = generateDisplayImg(data=txt, font=font, size=dimensions)
+        if (i == 'temp' or i == 'humid' or i == 'clock'):
+            txt = data[i]['display']
+            dimensions = tmpDraw.textsize(txt, font=font, stroke_width=1)
+            data[i] = generateDisplayImg(data=txt, font=font, size=dimensions)
+        if ('graph' in i):
+            dimensions = [coords[i][2] - coords[i][0], coords[i][3] - coords[i][1]]
+            print(f"attempting to curl {data[i]['url']}")
+            data[i] = Image.open(urlopen(data[i]['url']))
+
     return data
 
 def generateDisplayImg(data, font, size):
@@ -177,6 +184,7 @@ class Layout:
         golden = ( 1 + 5 ** 0.5 ) / 2
         self.LPanW = self.BoxHeight * golden
         #Define how large each graph should be
+        #this should be a dict to make it easier to send to other functions
         self.GraphW = self.TotalWidth - self.LPanW - self.BufferW
         self.Graph1H = ( self.TotalHeight / 2 ) - ( 2 * self.BufferH )
         self.Graph2H = ( self.TotalHeight / 3 ) - ( 2 * self.BufferH )

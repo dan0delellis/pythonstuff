@@ -45,7 +45,7 @@ root.geometry(f"{width}x{height}")
 
 #create layout object
 layout = Layout(width, height)
-data = generateDisplayData(keys=['temp', 'humid'], font=fnt, debug=args.debug)
+data = generateDisplayData(keys=['temp', 'humid', 'graph1'], font=fnt, debug=args.debug, coords=layout.coords)
 layout.image = displayDash(layout, data, args.debug)
 
 readout = ImageTk.PhotoImage(image=layout.image)
