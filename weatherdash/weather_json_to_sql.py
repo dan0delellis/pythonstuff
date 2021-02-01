@@ -8,7 +8,7 @@ import mysql.connector
 
 s = sched.scheduler(time.time, time.sleep)
 
-sqlURL = "10.0.0.2"
+sqlURL = "10.2.0.2"
 sqlUsr = "sensorsrecord"
 sqlPw = "donkeyboner"
 sqlDB = "climate"

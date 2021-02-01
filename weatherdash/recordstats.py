@@ -9,7 +9,7 @@ table = "readings"
 location = "apartment"
 
 s = sched.scheduler(time.time, time.sleep)
-db = mysql.connector.connect(host="10.0.0.2", user="sensorsrecord", password="donkeyboner", database="climate")
+db = mysql.connector.connect(host="10.2.0.2", user="sensorsrecord", password="donkeyboner", database="climate")
 mycursor = db.cursor()
 i2c = busio.I2C(board.SCL, board.SDA)
 #I may have fried my sensor by not paying attention to the 'Non-condensing' part of the humidity safety indication so now it reports on 0x76.
