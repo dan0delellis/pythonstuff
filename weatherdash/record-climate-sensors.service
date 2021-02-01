@@ -1,12 +1,12 @@
 [Unit]
-Description=weather-stats-to-redis
+Description=climate_sensors_record
 Wants=network-online.target
 After=network.target network-online.target weather-stats.service
 
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/sbin/weather-stats-to-redis.py
+ExecStart=/usr/sbin/climate_sensors_record.py
 Restart=on-failure
 
 [Install]
