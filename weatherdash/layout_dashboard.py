@@ -23,25 +23,61 @@ def displayDash(layout, data, debug):
     return layout.image
 
 def generateGraphUrl(key, coords):
-    graphNames = {
-        'graph1': 'temp',
-        'graph2': 'humid',
-        'graph3': 'pressure'
+    graphMetadata = {
+        'graph1': {},
+        'graph2': {},
+        'graph3': {}
     }
+
+    graphMetadata['graph1']['name'] = 'temp'
+    graphMetadata['graph1']['dashId'] = '0PZFMkLMz'
+    graphMetadata['graph1']['dashname'] = 'graph1'
+    graphMetadata['graph1']['panelId'] = '2'
+
+    graphMetadata['graph2']['name'] = 'temp'
+    graphMetadata['graph2']['dashId'] = '44IpGkYMk'
+    graphMetadata['graph2']['dashname'] = 'graph2'
+    graphMetadata['graph2']['panelId'] = '2'
+
+    graphMetadata['graph3']['name'] = 'temp'
+    graphMetadata['graph3']['dashId'] = 'wQmTGkYGk'
+    graphMetadata['graph3']['dashname'] = 'graph3'
+    graphMetadata['graph3']['panelId'] = '2'
+
     height = coords[3]-coords[1]
     width = coords[2] - coords[0]
 
-    grafanaUrl = "http://10.0.0.18:3000"
-    instanceId= "mZHPfsfGk"
+    grafanaUrl = "grafana.apartment:3000"
     tz = "America%2FLos_Angeles"
+    orgId = '1'
 
     end = floor(time.time())
     start = end - 86400
 
-    url = f"{grafanaUrl}/render/d-solo/{instanceId}/{graphNames[key]}?orgId=1&refresh=10s&from={start}&to={end}&theme=light&panelId=1&width={width}&height={height}&tz={tz}"
 
+    d = graphMetadata[key]
+
+    url = "http://" \
+        + grafanaUrl \
+        + "/render/d-solo/" \
+        + d['dashId'] \
+        + "/" \
+        + d['dashname'] \
+        + "?orgId=" \
+        + orgId \
+        + "&from="\
+        + f"{start*1000}" \
+        + "&to=" \
+        + f"{end*1000}" \
+        + "&theme=light&panelId=" \
+        + d['panelId'] \
+        + "&width=" \
+        + f"{width}" \
+        + "&height=" \
+        + f"{height}" \
+        + "&tz=" \
+        + tz
     return url
-
 
 def generateDisplayData(keys, font, debug, coords):
     data = {}
