@@ -1,5 +1,5 @@
 from PIL import Image,ImageDraw,ImageFont,ImageTk
-import time
+import time, io
 from urllib.request import urlopen
 import mysql.connector as sql
 #pip3 install mysql-connector-python
@@ -110,7 +110,8 @@ def generateDisplayData(keys, font, debug, coords):
         if ('graph' in i):
             dimensions = [coords[i][2] - coords[i][0], coords[i][3] - coords[i][1]]
             print(f"attempting to curl {data[i]['url']}")
-            data[i] = Image.open(urlopen(data[i]['url']))
+            b = io.BytesIO(urlopen(data[i]['url']).read())
+            data[i] = Image.open(b)
 
     return data
 
