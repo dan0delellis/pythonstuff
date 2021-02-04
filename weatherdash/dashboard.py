@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 from math import floor
-import argparse, os, tkinter, time, schedule
 from tkinter import ttk
+#apt-get install python3-tk #yes really
+import argparse, os, tkinter, time, schedule
+#pip3 install schedule pillow
 from PIL import Image,ImageDraw,ImageFont,ImageTk
 from layout_dashboard import *
 

@@ -2,6 +2,7 @@ from PIL import Image,ImageDraw,ImageFont,ImageTk
 import time
 from urllib.request import urlopen
 import mysql.connector as sql
+#pip3 install mysql-connector-python
 from datetime import timedelta, datetime
 from math import floor
 
@@ -48,7 +49,7 @@ def generateDisplayData(keys, font, debug, coords):
     for i in keys:
         data[i] = {}
         if (i == "temp" or i == "humid"):
-            data[i]['reading'] = getDataFromMysql(host="10.0.0.2", user="readonly", database="climate", lookback="live", dataSet=i, table="readings")
+            data[i]['reading'] = getDataFromMysql(host="mysql.apartment", user="readonly", database="climate", lookback="live", dataSet=i, table="readings")
         if ( 'graph' in i):
             data[i]['url'] = generateGraphUrl(i, coords[i])
 
