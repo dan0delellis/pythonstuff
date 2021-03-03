@@ -8,6 +8,7 @@ Type=simple
 User=root
 ExecStart=/usr/sbin/weather_json_to_sql.py
 Restart=on-failure
+RestartPreventExitStatus=75
 
 [Install]
 WantedBy=multi-user.target
