@@ -65,5 +65,66 @@ config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolat
 config.sections()
 config.read(args.config)
 
-video = config['video']
-print(video['mode'])
+### Done with args/config/logging
+
+resolutions = {
+    "480p" : "640:480",
+    "720p" : "1280:720",
+    "1080p" : "1920:1080",
+    "4k"    : "3840:2160",
+}
+
+### Start generating input arguments
+params = ['-hide_banner', '-i']
+if not args.safe:
+    params.append('-y')
+log.debug(f'parameters so far: {params}')
+
+
+def parse_time_options(parameters):
+    log.info("Parsing time options")
+    time_config=config['time']
+
+    iss = time_config['introSkipSeconds']
+    tts = time_config['totalTimeSeconds']
+    if iss['introSkipSeconds'] > 0:
+        parameters.extend(['-ss', iss])
+    log.debug(f'parameters so far: {parameters}')
+
+    if tts > 0:
+        parameters.extend(['-t', tss])
+    log.debug(f'parameters so far: {parameterss}')
+    return parameters
+
+def parse_video_options(parameters):
+    log.info("Parsing video options")
+    v = config['video']
+    v_min = v['minRate']
+    v_max = v['maxRate']
+    v_buf = v['bufSize']
+    tune = v['tune']
+
+    if v['justCopy']:
+        parameters.extend(["-c:v", "copy"])
+        return parameters
+
+    if not v['softwareEncode']:
+        parameters.extend(["-c:v", "h264_omx", "-profile:v", "high"])
+        return parameters
+
+    parameters.extend(["-c:v", "libx264", "-profile:v", "high10"])
+    if not v['crfMode']:
+        parameters.extend(["-b:v", v["bitRate"]])
+    else:
+        parameters.extend(["-crf", v['quality']])
+
+    if v_min != "":
+        parameters.extend(["-minrate", v_min])
+    if v_max != "":
+        parameters.extend(["-maxrate", v_max])
+    if tune != "":
+        parameters.extend(["-tune"], tune)
+    log.debug(f'parameters so far: {parameters}')
+    return parameters
+
+
