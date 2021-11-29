@@ -127,4 +127,40 @@ def parse_video_options(parameters):
     log.debug(f'parameters so far: {parameters}')
     return parameters
 
+def parse_audio_options(parameters):
+    defaults = dict(codec="aac", bitrate=192k, loudnorm="2pass", channels=2)
+    log.info("Parsing audio options")
+    a = config['audio']
 
+    #set audio codec
+    parameters.extend("-c:a")
+
+    if a['justCopy']:
+        parameters.extend(copy)
+        return parameters
+
+    if a['audioCodec'] != "":
+        defaults["codec"] = a['audioCodec']
+
+    parameters.extend(defaults["codec"])
+
+    #set audio bitrate
+    parameters.extend("-b:a")
+
+    if a['audioBitrate'] != "":
+        defaults["bitrate"] = a['audioBitrate']
+
+    parameters.extend(defaults["bitrate"])
+
+    #set audio channels
+    parameters.extend("-ac")
+
+    if a['audioChannels' !=:
+        defaults["channels"] = a['audioChannels']
+
+    parameters.extend(defaults["channels"])
+
+    return parameters
+
+def loudnorm:
+    #might want to just write another program for this.
