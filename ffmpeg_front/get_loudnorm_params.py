@@ -5,16 +5,13 @@ import re
 import json
 import os.path
 
-def get_loudnorm_params(filename):
+def get_loudnorm_params(filename,loudnorm_presets):
     json_filename = f"{filename}.loudnorm.json"
 
     if(os.path.exists(json_filename)):
         data_file = open(json_filename, "r")
         data = json.loads(data_file.read())
         return data
-
-
-    loudnorm_presets = "I=-16:TP=-1.5:LRA=11"
 
     cmd = ["ffmpeg",
         "-y",
@@ -54,5 +51,5 @@ def write_json_file(data,filename):
 
 
 
-filename = sys.argv[1]
-get_loudnorm_params(filename)
+#filename = sys.argv[1]
+#get_loudnorm_params(filename,"I=-16:TP=-1.5:LRA=11")

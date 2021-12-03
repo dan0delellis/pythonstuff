@@ -48,7 +48,7 @@ parser.add_argument(
     '--move-done-files',
     dest="old-files",
     help="Move completed files to a .old directory in same directory as the settings.json file",
-    default=False
+    default=False,
     action="store_true"
 )
 
@@ -138,7 +138,7 @@ def parse_video_options():
 
 def parse_audio_options():
     parameters = []
-    defaults = dict(codec="aac", bitrate=192k, loudnorm="2pass", channels=2)
+    defaults = dict(codec="aac", bitrate="192k", loudnorm="2pass", channels=2)
     log.info("Parsing audio options")
     a = config['audio']
 
@@ -165,7 +165,7 @@ def parse_audio_options():
     #set audio channels
     parameters.extend("-ac")
 
-    if a['audioChannels' !=:
+    if a['audioChannels'] != "":
         defaults["channels"] = a['audioChannels']
 
     parameters.extend(defaults["channels"])
