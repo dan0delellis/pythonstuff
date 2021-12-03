@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse, logging, configparser
+from get_loudnorm_params import get_loudnorm_params
 
 #setup logging
 log = logging.getLogger()
@@ -50,22 +51,7 @@ parser.add_argument(
     default=False
     action="store_true"
 )
-#parser.add_argument(
-#    '--destination-directory',
-#    dest="destination",
-#    help="Destination directory for file output. Default is current working directory.",
-#    default="",
-#    type=str
-#)
-#parser.add_argument(
-#    '--directory',
-#    dest="directory",
-#    help="Process all files found in a target directory. If --input is omitted, will assume current working directory. If --input specifies a non-directory (either a file or an invalid path), program will exit with an error. Ignores --output flag. Output files will have REENCODED- prepended to the filename if --destination-directory is not specified.",
-#    default=False,
-#    action="store_true"
-#)
 
-args = parser.parse_args()
 print(args)
 
 config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
@@ -184,7 +170,21 @@ def parse_audio_options():
 
     parameters.extend(defaults["channels"])
 
+    if a["loudnorm"] != False:
+        parameters.extend("-af")
+        loudnorm_presets = "I=-16:TP=-1.5:LRA=11"
+        loudnorm_filter = f"loudnorm={loudnorm_presets}"
+        if a["loudnorm"] == "2pass":
+            loudnorm_json = get_loudnorm_params(args.input, loudnorm_presets)
+
+            loudnorm_filter = "{loudnorm_filter}:measured_I={}:measured_LRA={}:measured_TP={}:measured_thresh={}:offset={}:linear=true".format(
+                loudnorm_presets,
+                loudnorm_json["output_i"],
+                loudnorm_json["output_lra"],
+                loudnorm_json["output_tp"],
+                loudnorm_json["output_thresh"],
+                loudnorm_json["target_offset"])
+        parameters.extend(loudnorm_filter)
+
     return parameters
 
-def loudnorm:
-    #might want to just write another program for this.
