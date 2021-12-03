@@ -126,6 +126,8 @@ def parse_video_options():
     if tune != "":
         parameters = add_arg(parameters,["-tune", tune])
     log.debug(f'parameters so far: {parameters}')
+
+    #here is where  I need to make it do -vf scale=x:y
     return parameters
 
 def parse_audio_options():
