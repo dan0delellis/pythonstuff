@@ -7,7 +7,7 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 fh = logging.FileHandler('ooga.log')
 ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 logFormat = logging.Formatter('%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 ch.setFormatter(logFormat)
 fh.setFormatter(logFormat)
@@ -52,6 +52,7 @@ parser.add_argument(
     action="store_true"
 )
 
+args = parser.parse_args()
 print(args)
 
 config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
@@ -70,24 +71,13 @@ resolutions = {
 def show_params(parameters):
     log.debug(f'parameters so far: {parameters}')
 
-### Start generating input arguments
-params = ('-hide_banner')
-if not args.safe:
-    params.append('-y')
-show_params(params)
-
-time_params = parse_time_options()
-params.append(time_params)
-show_params(params)
-
-video_params = parse_video_options()
-params.append(video_params)
-show_params(params)
-
-audio_params = parse_audio_options()
-params.append(audio_params)
-show_params(params)
-
+def add_arg(params,arglist):
+    if isinstance(arglist,str):
+        params.extend([arglist])
+        return params
+    for x in arglist:
+        params.append(x)
+    return params
 
 def parse_time_options():
     parameters = []
@@ -96,43 +86,45 @@ def parse_time_options():
 
     iss = time_config['introSkipSeconds']
     tts = time_config['totalTimeSeconds']
-    if iss['introSkipSeconds'] > 0:
-        parameters.extend(['-ss', iss])
+    if float(iss) > 0:
+        parameters = add_arg(parameters, ['-ss', iss])
     log.debug(f'parameters so far: {parameters}')
 
-    if tts > 0:
-        parameters.extend(['-t', tss])
-    log.debug(f'parameters so far: {parameterss}')
+    if float(tts) > 0:
+        parameters = add_arg(parameters, ['-t', tss])
+    log.debug(f'parameters so far: {parameters}')
     return parameters
 
 def parse_video_options():
+    parameters = []
     log.info("Parsing video options")
     v = config['video']
-    v_min = v['minRate']
-    v_max = v['maxRate']
-    v_buf = v['bufSize']
+    v_min = v['videoMinRate']
+    v_max = v['videoMaxRate']
+    v_buf = v['videoBufSize']
     tune = v['tune']
 
-    if v['justCopy']:
-        parameters.extend(["-c:v", "copy"])
+    if v['justCopy'].lower() == "true":
+        parameters = add_arg(parameters, ["-c:v", "copy"])
         return parameters
 
-    if not v['softwareEncode']:
-        parameters.extend(["-c:v", "h264_omx", "-profile:v", "high"])
+    if v['rasPiHardwareEncode'].lower() == "true":
+        parameters = add_arg(parameters, ["-c:v", "h264_omx", "-profile:v", "high"])
         return parameters
 
-    parameters.extend(["-c:v", "libx264", "-profile:v", "high10"])
-    if not v['crfMode']:
-        parameters.extend(["-b:v", v["bitRate"]])
+    parameters = add_arg(parameters, ["-c:v", "libx264", "-profile:v", "high10"])
+    if v['mode'].lower == 'cbr':
+        parameters = add_arg(parameters, ["-b:v", v["bitRate"]])
+        if v_max != "" and v_buf != "":
+            parameters = add_arg(parameters, ["-maxrate", v_max])
+            parameters = add_arg(parameters, ["-bufsize", v_buf])
+        if v_min != "":
+            parameters = add_arg(parameters, ["-minrate", v_min])
     else:
-        parameters.extend(["-crf", v['quality']])
+        parameters = add_arg(parameters, ["-crf", v['quality']])
 
-    if v_min != "":
-        parameters.extend(["-minrate", v_min])
-    if v_max != "":
-        parameters.extend(["-maxrate", v_max])
     if tune != "":
-        parameters.extend(["-tune"], tune)
+        parameters = add_arg(parameters,["-tune", tune])
     log.debug(f'parameters so far: {parameters}')
     return parameters
 
@@ -143,35 +135,37 @@ def parse_audio_options():
     a = config['audio']
 
     #set audio codec
-    parameters.extend("-c:a")
+    parameters = add_arg(parameters, ['-c:a'])
+
+    parameters = add_arg(parameters, "boner")
 
     if a['justCopy']:
-        parameters.extend(copy)
+        parameters = add_arg(parameters, "copy")
         return parameters
 
     if a['audioCodec'] != "":
         defaults["codec"] = a['audioCodec']
 
-    parameters.extend(defaults["codec"])
+    parameters = add_arg(parameters, defaults["codec"])
 
     #set audio bitrate
-    parameters.extend("-b:a")
+    parameters = add_arg(parameters, "-b:a")
 
     if a['audioBitrate'] != "":
         defaults["bitrate"] = a['audioBitrate']
 
-    parameters.extend(defaults["bitrate"])
+    parameters = add_arg(parameters, defaults["bitrate"])
 
     #set audio channels
-    parameters.extend("-ac")
+    parameters = add_arg(parameters, "-ac")
 
     if a['audioChannels'] != "":
         defaults["channels"] = a['audioChannels']
 
-    parameters.extend(defaults["channels"])
+    parameters = add_arg(parameters, defaults["channels"])
 
     if a["loudnorm"] != False:
-        parameters.extend("-af")
+        parameters = add_arg(parameters, "-af")
         loudnorm_presets = "I=-16:TP=-1.5:LRA=11"
         loudnorm_filter = f"loudnorm={loudnorm_presets}"
         if a["loudnorm"] == "2pass":
@@ -184,7 +178,25 @@ def parse_audio_options():
                 loudnorm_json["output_tp"],
                 loudnorm_json["output_thresh"],
                 loudnorm_json["target_offset"])
-        parameters.extend(loudnorm_filter)
+        parameters = add_arg(parameters, loudnorm_filter)
 
     return parameters
 
+### Start generating input arguments
+params = ['ffmpeg','-hide_banner']
+if not args.safe:
+    params.append('-y')
+params = add_arg(params, ["-i", args.input])
+show_params(params)
+
+time_params = parse_time_options()
+params = add_arg(params, time_params)
+show_params(params)
+
+video_params = parse_video_options()
+params = add_arg(params, video_params)
+show_params(params)
+
+audio_params = parse_audio_options()
+params = add_arg(params, audio_params)
+show_params(params)
