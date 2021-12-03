@@ -137,7 +137,6 @@ def parse_audio_options():
     #set audio codec
     parameters = add_arg(parameters, ['-c:a'])
 
-    parameters = add_arg(parameters, "boner")
 
     if a['justCopy']:
         parameters = add_arg(parameters, "copy")
