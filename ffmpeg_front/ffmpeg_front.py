@@ -68,6 +68,15 @@ resolutions = {
     "4k"    : "3840:2160",
 }
 
+def is_that_a_no(val):
+    ways_to_say_no = ["no", "", "false", "none"]
+    ans = val.lower()
+    for x in ways_to_say_no:
+        if x == ans:
+            return True
+    return False
+
+
 def show_params(parameters):
     log.debug(f'parameters so far: {parameters}')
 
@@ -88,31 +97,39 @@ def parse_time_options():
     tts = time_config['totalTimeSeconds']
     if float(iss) > 0:
         parameters = add_arg(parameters, ['-ss', iss])
-    log.debug(f'parameters so far: {parameters}')
 
     if float(tts) > 0:
-        parameters = add_arg(parameters, ['-t', tss])
-    log.debug(f'parameters so far: {parameters}')
+        parameters = add_arg(parameters, ['-ts', tss])
     return parameters
 
 def parse_video_options():
     parameters = []
     log.info("Parsing video options")
     v = config['video']
+    v_codec = v['codec']
+    v_profile = v['profile']
+    v_speed = v['speed']
     v_min = v['videoMinRate']
     v_max = v['videoMaxRate']
     v_buf = v['videoBufSize']
     tune = v['tune']
 
-    if v['justCopy'].lower() == "true":
+    if not is_that_a_no(v['justCopy']):
         parameters = add_arg(parameters, ["-c:v", "copy"])
         return parameters
 
-    if v['rasPiHardwareEncode'].lower() == "true":
+    if not is_that_a_no(v['rasPiHardwareEncode']):
         parameters = add_arg(parameters, ["-c:v", "h264_omx", "-profile:v", "high"])
         return parameters
 
-    parameters = add_arg(parameters, ["-c:v", "libx264", "-profile:v", "high10"])
+
+    if not is_that_a_no(v_codec):
+        parameters = add_arg(parameters, ["-c:v", v_codec])
+#here's where it gets messy
+#h265 uses main10
+#h264 uses high10
+#how to keep color space:
+#https://codecalamity.com/encoding-uhd-4k-hdr10-videos-with-ffmpeg/
     if v['mode'].lower == 'cbr':
         parameters = add_arg(parameters, ["-b:v", v["bitRate"]])
         if v_max != "" and v_buf != "":
@@ -123,9 +140,8 @@ def parse_video_options():
     else:
         parameters = add_arg(parameters, ["-crf", v['quality']])
 
-    if tune != "":
+    if not is_that_a_no(tune):
         parameters = add_arg(parameters,["-tune", tune])
-    log.debug(f'parameters so far: {parameters}')
 
     #here is where  I need to make it do -vf scale=x:y
     return parameters
@@ -140,11 +156,11 @@ def parse_audio_options():
     parameters = add_arg(parameters, ['-c:a'])
 
 
-    if a['justCopy']:
+    if not is_that_a_no(a['justCopy']):
         parameters = add_arg(parameters, "copy")
         return parameters
 
-    if a['audioCodec'] != "":
+    if not is_that_a_no(a['audioCodec']):
         defaults["codec"] = a['audioCodec']
 
     parameters = add_arg(parameters, defaults["codec"])
@@ -152,33 +168,37 @@ def parse_audio_options():
     #set audio bitrate
     parameters = add_arg(parameters, "-b:a")
 
-    if a['audioBitrate'] != "":
+    if not is_that_a_no(a['audioBitrate']):
         defaults["bitrate"] = a['audioBitrate']
 
     parameters = add_arg(parameters, defaults["bitrate"])
 
+
     #set audio channels
     parameters = add_arg(parameters, "-ac")
 
-    if a['audioChannels'] != "":
+    if not is_that_a_no(a['audioChannels']):
         defaults["channels"] = a['audioChannels']
 
     parameters = add_arg(parameters, defaults["channels"])
 
-    if a["loudnorm"] != False:
+
+    if not is_that_a_no(a['loudnorm']):
         parameters = add_arg(parameters, "-af")
         loudnorm_presets = "I=-16:TP=-1.5:LRA=11"
-        loudnorm_filter = f"loudnorm={loudnorm_presets}"
+        loudnorm_filter = []
         if a["loudnorm"] == "2pass":
-            loudnorm_json = get_loudnorm_params(args.input, loudnorm_presets)
+            ln_json = get_loudnorm_params(args.input, loudnorm_presets)
 
-            loudnorm_filter = "{loudnorm_filter}:measured_I={}:measured_LRA={}:measured_TP={}:measured_thresh={}:offset={}:linear=true".format(
-                loudnorm_presets,
-                loudnorm_json["output_i"],
-                loudnorm_json["output_lra"],
-                loudnorm_json["output_tp"],
-                loudnorm_json["output_thresh"],
-                loudnorm_json["target_offset"])
+            loudnorm_filter = "".join([
+                "loudnorm=", loudnorm_presets,
+                ":measured_I=", ln_json["output_i"],
+                ":measured_LRA=", ln_json["output_lra"],
+                ":measured_TP=", ln_json["output_tp"],
+                ":measured_thresh=", ln_json["output_thresh"],
+                ":offset=", ln_json["target_offset"],
+                ":linear=true"])
+
         parameters = add_arg(parameters, loudnorm_filter)
 
     return parameters
@@ -193,11 +213,14 @@ show_params(params)
 time_params = parse_time_options()
 params = add_arg(params, time_params)
 show_params(params)
+log.debug(f"got time parameters")
 
 video_params = parse_video_options()
 params = add_arg(params, video_params)
 show_params(params)
+log.debug(f"got video parameters")
 
 audio_params = parse_audio_options()
 params = add_arg(params, audio_params)
 show_params(params)
+log.debug(f"got audio parameters")
