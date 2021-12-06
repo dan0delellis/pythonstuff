@@ -106,9 +106,9 @@ def parse_video_options():
     parameters = []
     log.info("Parsing video options")
     v = config['video']
-    v_codec = v['codec']
-    v_profile = v['profile']
-    v_speed = v['speed']
+    v_codec = v['videoCodec']
+    v_profile = v['videoProfile']
+    v_speed = v['preset']
     v_min = v['videoMinRate']
     v_max = v['videoMaxRate']
     v_buf = v['videoBufSize']
