@@ -5,6 +5,40 @@ import re
 import json
 import os.path
 
+def run_cmd_get_pipes(cmd):
+    pipes = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    std_out, std_err = pipes.communicate()
+    return std_out, std_err
+
+
+def get_colorspace_params(filename,fieldlist):
+    cmd = ['ffprobe',
+        '-hide_banner',
+        '-loglevel',
+        'warning',
+        '-select_streams',
+        'v',
+        '-print_format',
+        'json',
+        '-show_frames',
+        '-read_intervals',
+        "%+#1",
+        '-show_entries',
+        fieldlist,
+        '-i',
+        filename
+    ]
+    std_out, std_err = run_cmd_get_pipes(cmd)
+    why = std_out.decode("utf-8").split("\n")
+    jank_json = "{"
+    for x in why:
+        if re.search(":\s*\"[0-9a-zA-Z]", x):
+            jank_json+=x
+    jank_json+="}"
+
+    data = json.loads(jank_json)
+    return data
+
 def get_loudnorm_params(filename,loudnorm_presets):
     json_filename = f"{filename}.loudnorm.json"
 
@@ -24,8 +58,7 @@ def get_loudnorm_params(filename,loudnorm_presets):
         "null",
         "/dev/null"]
 
-    pipes = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    std_out, std_err = pipes.communicate()
+    std_out, std_err = run_cmd_get_pipes(cmd)
 
     nolines = re.sub(r'\n', "", std_err.decode("utf-8"))
 

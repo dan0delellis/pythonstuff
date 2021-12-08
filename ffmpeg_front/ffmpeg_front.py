@@ -105,14 +105,14 @@ def parse_time_options():
 def parse_video_options():
     parameters = []
     log.info("Parsing video options")
-    v = config['video']
-    v_codec = v['videoCodec']
-    v_profile = v['videoProfile']
-    v_speed = v['preset']
-    v_min = v['videoMinRate']
-    v_max = v['videoMaxRate']
-    v_buf = v['videoBufSize']
-    tune = v['tune']
+    v = config['video'].lower()
+    v_codec = v['videoCodec'].lower()
+    v_profile = v['videoProfile'].lower()
+    v_speed = v['preset'].lower()
+    v_min = v['videoMinRate'].lower()
+    v_max = v['videoMaxRate'].lower()
+    v_buf = v['videoBufSize'].lower()
+    tune = v['tune'].lower()
 
     if not is_that_a_no(v['justCopy']):
         parameters = add_arg(parameters, ["-c:v", "copy"])
@@ -126,10 +126,18 @@ def parse_video_options():
     if not is_that_a_no(v_codec):
         parameters = add_arg(parameters, ["-c:v", v_codec])
 #here's where it gets messy
-#h265 uses main10
-#h264 uses high10
 #how to keep color space:
 #https://codecalamity.com/encoding-uhd-4k-hdr10-videos-with-ffmpeg/
+    if is_that_a_no(v_profile):
+        parameters = add_arg(parameters, "-profile")
+        if v_codec == 'h264':
+            parameters = add_arg(parameters, "high10")
+        if v_codec == 'h265' || v_codec == 'hevc':
+            parameters = add_arg(parameters, "main10")
+    else:
+        if v_profile != "default":
+            parameters = add_arg(parameters, ["-profile", v_profile])
+
     if v['mode'].lower == 'cbr':
         parameters = add_arg(parameters, ["-b:v", v["bitRate"]])
         if v_max != "" and v_buf != "":
