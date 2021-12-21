@@ -113,6 +113,7 @@ def parse_video_options():
     v_max = v['videoMaxRate'].lower()
     v_buf = v['videoBufSize'].lower()
     tune = v['tune'].lower()
+    resolution = v['resolution'].lower()
 
     if not is_that_a_no(v['justCopy']):
         parameters = add_arg(parameters, ["-c:v", "copy"])
@@ -151,8 +152,30 @@ def parse_video_options():
     if not is_that_a_no(tune):
         parameters = add_arg(parameters,["-tune", tune])
 
-    #here is where  I need to make it do -vf scale=x:y
     return parameters
+#    if not is_that_a_no(resolution):
+#        parameters = add_arg(parameters, "-vf")
+#        if resolution in resolutions:
+#            parameters = add_arg(parameters, f"scale={resolutions[resolution]}")
+#        else:
+#            parameters = add_arg(parameters, f"{resolution}")
+#
+#    subs_options = parse_subtitle_options()
+#
+#    return parameters
+#
+#def parse_subtitle_options():
+##   -vf "subtitles='$PATH_TO_MKV':stream_index=$SUBTITLE_ID"'
+#    subs = '"subtitles=\'$PATH_TO_MKV\':stream_index=$SUBTITLE_ID"'
+#    s = config['subtitles']
+#    burn_subs = s['burnInSubtitles'].lower()
+#    subs_file = s['subtitleFile'].lower()
+#    subs_style = s['subtitleStyle'].lower()
+#    subs_stream = s['subtitleStream'].lower()
+#
+#    if is_that_a_no(burn_subs):
+#        return None
+#
 
 def parse_audio_options():
     parameters = []
@@ -228,6 +251,8 @@ params = add_arg(params, video_params)
 show_params(params)
 log.debug(f"got video parameters")
 
+print("From here, I need to do the following:\n* make a function for parsing the video filters. Do subtitles first, if applicable, then do video scaling, also if applicable.\n* If neither is applicable, then just return nothing and don't append anything to the video command.\n* If either or both are set, it has this syntax:\n* `-vf \"subtitles=subfile:style=whatever , anotherfilter=option=setting:option2=setting , scale=640:480\"`\n* It's basically CSV and you can put whitespace around the commas.\n* Video scaling should be last.\nYou can specify the default sub file in a video stream by just specifying the video stream. If you want stream index 3 instead, do `videofile:si=3`\n\n")
+print("after that you need to do this stuff: https://codecalamity.com/encoding-uhd-4k-hdr10-videos-with-ffmpeg/")
 audio_params = parse_audio_options()
 params = add_arg(params, audio_params)
 show_params(params)
