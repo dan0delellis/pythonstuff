@@ -48,6 +48,7 @@ def get_loudnorm_params(filename,loudnorm_presets):
         return data
 
     cmd = ["ffmpeg",
+        "-hide_banner",
         "-y",
         "-i",
         filename,
@@ -56,13 +57,16 @@ def get_loudnorm_params(filename,loudnorm_presets):
         f"loudnorm={loudnorm_presets}:print_format=json",
         "-f",
         "null",
-        "/dev/null"]
+        "-"]
+
+    print(cmd)
 
     std_out, std_err = run_cmd_get_pipes(cmd)
 
     nolines = re.sub(r'\n', "", std_err.decode("utf-8"))
 
     loudnorm_vals = re.sub(r'.*{','{', nolines)
+    print(loudnorm_vals)
     loudnorm_json = json.loads(loudnorm_vals)
 
 

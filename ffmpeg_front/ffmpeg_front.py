@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse, logging, configparser
-from get_loudnorm_params import get_loudnorm_params
+from get_loudness_colorspace import get_loudnorm_params
 
 #setup logging
 log = logging.getLogger()
@@ -105,7 +105,7 @@ def parse_time_options():
 def parse_video_options():
     parameters = []
     log.info("Parsing video options")
-    v = config['video'].lower()
+    v = config['video']
     v_codec = v['videoCodec'].lower()
     v_profile = v['videoProfile'].lower()
     v_speed = v['preset'].lower()
@@ -132,7 +132,7 @@ def parse_video_options():
         parameters = add_arg(parameters, "-profile")
         if v_codec == 'h264':
             parameters = add_arg(parameters, "high10")
-        if v_codec == 'h265' || v_codec == 'hevc':
+        if v_codec == 'h265' or v_codec == 'hevc':
             parameters = add_arg(parameters, "main10")
     else:
         if v_profile != "default":
