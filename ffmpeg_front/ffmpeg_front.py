@@ -51,6 +51,13 @@ parser.add_argument(
     default=False,
     action="store_true"
 )
+parser.add_argument(
+    '--conf-help',
+    dest="conf-help",
+    help="Show help info for the config file",
+    default=False,
+    action="store_true"
+)
 
 args = parser.parse_args()
 print(args)
