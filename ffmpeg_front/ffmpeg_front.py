@@ -76,7 +76,7 @@ resolutions = {
 }
 
 def is_that_a_no(val):
-    ways_to_say_no = ["no", "", "false", "none"]
+    ways_to_say_no = ["no", "", "false", "none", False]
     ans = val.lower()
     for x in ways_to_say_no:
         if x == ans:
@@ -120,7 +120,10 @@ def parse_video_options():
     v_max = v['videoMaxRate'].lower()
     v_buf = v['videoBufSize'].lower()
     tune = v['tune'].lower()
+    v_filters = v['otherFilters'].lower()
     resolution = v['resolution'].lower()
+    s = config['subtitles']
+    burn_subs = s['burnInSubtitles'].lower()
 
     if not is_that_a_no(v['justCopy']):
         parameters = add_arg(parameters, ["-c:v", "copy"])
@@ -159,30 +162,68 @@ def parse_video_options():
     if not is_that_a_no(tune):
         parameters = add_arg(parameters,["-tune", tune])
 
+    filter_set = False
+    subs_options = ""
+    resolution_options = ""
+    other_filters = ""
+    filter_list = []
+
+
+    if not is_that_a_no(burn_subs):
+        filter_set = True
+        subs_options = parse_subtitle_options()
+
+    if not is_that_a_no(resolution):
+        filter_set = True
+        resolution_options = parse_resolution(resolution)
+
+    if not is_that_a_no(other_filters):
+        filter_set = True
+
+    if not filter_set:
+        return parameters
+
+    filter_list = [subs_options, other_filters, resolution_options]
+
+    while("" in filter_list):
+        filter_list.remove("")
+
+    filter_list = ",".join(filter_list)
+
+    parameters = add_arg(parameters, ["-vf", filter_list])
+
     return parameters
-#    if not is_that_a_no(resolution):
-#        parameters = add_arg(parameters, "-vf")
-#        if resolution in resolutions:
-#            parameters = add_arg(parameters, f"scale={resolutions[resolution]}")
-#        else:
-#            parameters = add_arg(parameters, f"{resolution}")
-#
-#    subs_options = parse_subtitle_options()
-#
-#    return parameters
-#
-#def parse_subtitle_options():
-##   -vf "subtitles='$PATH_TO_MKV':stream_index=$SUBTITLE_ID"'
-#    subs = '"subtitles=\'$PATH_TO_MKV\':stream_index=$SUBTITLE_ID"'
-#    s = config['subtitles']
-#    burn_subs = s['burnInSubtitles'].lower()
-#    subs_file = s['subtitleFile'].lower()
-#    subs_style = s['subtitleStyle'].lower()
-#    subs_stream = s['subtitleStream'].lower()
-#
-#    if is_that_a_no(burn_subs):
-#        return None
-#
+
+def parse_resolution(res):
+    if res in resolutions:
+        res = f"scale={resolutions[res]}"
+        return res
+    else:
+        return f"scale={res}"
+
+    return None
+
+def parse_subtitle_options():
+    subs_options = ["subtitles="]
+    s = config['subtitles']
+    subs_file = s['subtitleExternalFile']
+    subs_stream = s['subtitleStream'].lower()
+    subs_style = s['subtitleStyle'].lower()
+
+    if is_that_a_no(subs_file):
+        log.debug(f"im using the intput files:{args.input}")
+        subs_file = args.input
+
+    subs_options.append(subs_file)
+
+    if not is_that_a_no(subs_style):
+        subs_options.append(f"style={subs_style}")
+
+    if not is_that_a_no(subs_stream):
+        subs_options.append(f"stream_index={subs_stream}")
+
+    subs_string = ":".join(subs_options)
+    return subs_string
 
 def parse_audio_options():
     parameters = []
