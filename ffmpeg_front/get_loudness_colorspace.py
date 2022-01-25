@@ -6,12 +6,86 @@ import json
 import os.path
 
 def run_cmd_get_pipes(cmd):
-    pipes = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    std_out, std_err = pipes.communicate()
+    try:
+        pipes = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        std_out, std_err = pipes.communicate()
+    except Exception as e:
+        print(e)
+
     return std_out, std_err
 
+def force_denom(v, d):
+    p = v.split("/")
+    if int(p[1]) == d:
+        return p[0]
+    else:
+        print(v)
+        r = float(p[0]) / float(p[1])
+        n = int(d * r)
+        return n
 
-def get_colorspace_params(filename,fieldlist):
+def clean_data(data):
+    cleaned = data
+    denom_50k = [
+        "red_x",
+        "red_y",
+        "green_x",
+        "green_y",
+        "blue_x",
+        "blue_y",
+        "white_point_x",
+        "white_point_y"]
+
+    denom_10k = [
+        "min_luminance",
+        "max_luminance"
+    ]
+    int_val = [
+        "max_content",
+        "max_average"
+    ]
+
+    for i in denom_50k:
+        if i in data:
+            cleaned[i] = force_denom(data[i],50000)
+        else:
+            cleaned["master-data"] = False
+
+    for i in denom_10k:
+        if i in data:
+            cleaned[i] = force_denom(data[i],10000)
+        else:
+            cleaned["master-data"] = False
+
+    for i in int_val:
+        if not i in data:
+            cleaned["light-level"] = False
+
+    return cleaned
+
+def flatten_json(y):
+    out = {}
+
+    def flatten(x, name =''):
+        if type(x) is dict:
+            for a in x:
+                flatten(x[a], a)
+
+        elif type(x) is list:
+            i = 0
+            for a in x:
+                flatten(a, a)
+                i += 1
+        else:
+            out[name] = x
+
+    flatten(y)
+    out = clean_data(out)
+    return out
+
+def get_colorspace_params(filename,fieldlist="frame=color_space,color_primaries,color_transfer,side_data_list,pix_fmt"):
+    data = {}
+
     cmd = ['ffprobe',
         '-hide_banner',
         '-loglevel',
@@ -29,15 +103,11 @@ def get_colorspace_params(filename,fieldlist):
         filename
     ]
     std_out, std_err = run_cmd_get_pipes(cmd)
-    why = std_out.decode("utf-8").split("\n")
-    jank_json = "{"
-    for x in why:
-        if re.search(":\s*\"[0-9a-zA-Z]", x):
-            jank_json+=x
-    jank_json+="}"
+    json_text = std_out.decode("utf-8")
+    full_json = json.loads(json_text)
+    data = flatten_json(full_json["frames"])
 
-    data = json.loads(jank_json)
-    return data
+    return(data)
 
 def get_loudnorm_params(filename,loudnorm_presets):
     json_filename = f"{filename}.loudnorm.json"
@@ -86,7 +156,6 @@ def write_json_file(data,filename):
     filehandle.write(json.dumps(data,indent=4))
     filehandle.close()
 
-
-
-#filename = sys.argv[1]
+filename = sys.argv[1]
+print(get_colorspace_params(filename))
 #get_loudnorm_params(filename,"I=-16:TP=-1.5:LRA=11")
