@@ -10,7 +10,7 @@ def run_cmd_get_pipes(cmd):
         pipes = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         std_out, std_err = pipes.communicate()
     except Exception as e:
-        print(e)
+        return(e, ":(")
 
     return std_out, std_err
 
@@ -86,6 +86,7 @@ def flatten_json(y):
     return out
 
 def get_colorspace_params(filename,fieldlist="frame=color_space,color_primaries,color_transfer,side_data_list,pix_fmt"):
+    print(filename)
     data = {}
 
     cmd = ['ffprobe',
@@ -105,6 +106,9 @@ def get_colorspace_params(filename,fieldlist="frame=color_space,color_primaries,
         filename
     ]
     std_out, std_err = run_cmd_get_pipes(cmd)
+    if type(std_out) == "Exception":
+        return std_out
+
     json_text = std_out.decode("utf-8")
     full_json = json.loads(json_text)
     data = flatten_json(full_json["frames"])
@@ -135,6 +139,9 @@ def get_loudnorm_params(filename,loudnorm_presets):
 
     std_out, std_err = run_cmd_get_pipes(cmd)
 
+    if type(std_out) == "Exception":
+        return std_out
+
     nolines = re.sub(r'\n', "", std_err.decode("utf-8"))
 
     loudnorm_vals = re.sub(r'.*{','{', nolines)
@@ -145,22 +152,14 @@ def get_loudnorm_params(filename,loudnorm_presets):
     write_json_file(loudnorm_json,json_filename)
     return loudnorm_json
 
-    loudnorm_filter = "{}:measured_I={}:measured_LRA={}:measured_TP={}:measured_thresh={}:offset={}:linear=true".format(
-        loudnorm_presets,
-        loudnorm_json["output_i"],
-        loudnorm_json["output_lra"],
-        loudnorm_json["output_tp"],
-        loudnorm_json["output_thresh"],
-        loudnorm_json["target_offset"])
-
 def write_json_file(data,filename):
     filehandle = open(filename, "w")
     filehandle.write(json.dumps(data,indent=4))
     filehandle.close()
 
-filename = sys.argv[1]
-herp = get_colorspace_params(filename)
-for key in herp:
-    print(f"{key}: {herp[key]}")
-
+#filename = sys.argv[1]
+#herp = get_colorspace_params(filename)
+#for key in herp:
+#    print(f"{key}: {herp[key]}")
+#
 #get_loudnorm_params(filename,"I=-16:TP=-1.5:LRA=11")

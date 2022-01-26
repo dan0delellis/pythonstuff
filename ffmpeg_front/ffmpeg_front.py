@@ -134,17 +134,15 @@ def parse_video_options():
         parameters = add_arg(parameters, ["-c:v", "h264_omx", "-profile:v", "high"])
         return parameters
 
-
     if not is_that_a_no(v_codec):
         parameters = add_arg(parameters, ["-c:v", v_codec])
 
+    hdr_parms = {}
+
     if not is_that_a_no(v_hdr):
-        hdr_params = parse_hdr_params(filename)
+        hdr_params = parse_hdr_params()
+        parameters = add_arg(parameters, hdr_params["x265-params"])
 
-
-#here's where it gets messy
-#how to keep color space:
-#https://codecalamity.com/encoding-uhd-4k-hdr10-videos-with-ffmpeg/
     if is_that_a_no(v_profile):
         parameters = add_arg(parameters, "-profile")
         if v_codec == 'h264':
@@ -164,6 +162,11 @@ def parse_video_options():
             parameters = add_arg(parameters, ["-minrate", v_min])
     else:
         parameters = add_arg(parameters, ["-crf", v['quality']])
+
+    parameters = add_arg(parameters, ["-preset", "slow"]) #deal with it, nerd
+
+    if "pix_fmt" in hdr_params:
+        parameters = add_arg(parameters, ["-pix_fmt", hdr_params["pix_fmt"]])
 
     if not is_that_a_no(tune):
         parameters = add_arg(parameters,["-tune", tune])
@@ -201,7 +204,7 @@ def parse_video_options():
 def parse_hdr_params():
     hdr_dict = get_colorspace_params(args.input)
 
-    if type(hdr_dict) = "Exception":
+    if type(hdr_dict) == "Exception":
         log.error(hdr_dict)
         exit(1)
 
@@ -222,8 +225,6 @@ def parse_hdr_params():
     if colormatrix in hdr_dict:
         add_arg(hdr_params,f"colormatrix={hdr_dict[colormatrix]}")
 
-    #-x265-params hdr-opt=1:repeat-headers=1:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:master-display=G(8500,39850)B(6550,2300)R(35400,14600)WP(15635,16450)L(40000000,50):max-cll=0,0
-
     if hdr_dict[master_display] != False:
         carestian_string = f"{master_display}=" \
             f"G({hdr_dict[green_x]},{hdr_dict[green_y]})" \
@@ -239,7 +240,8 @@ def parse_hdr_params():
 
     param_string = ":".join(hdr_params)
 
-    return ["-x265-params", param_string]
+    hdr_settings = { "x265-params" : param_string, pix_fmt: hdr_dict[pix_fmt] }
+    return hdr_settings
 
 def parse_resolution(res):
     if res in resolutions:
@@ -346,7 +348,6 @@ params = add_arg(params, video_params)
 show_params(params)
 log.debug(f"got video parameters")
 
-print("after that you need to do this stuff: https://codecalamity.com/encoding-uhd-4k-hdr10-videos-with-ffmpeg/\n\n")
 audio_params = parse_audio_options()
 params = add_arg(params, audio_params)
 show_params(params)
