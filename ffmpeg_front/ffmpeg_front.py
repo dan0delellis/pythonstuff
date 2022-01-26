@@ -352,3 +352,5 @@ audio_params = parse_audio_options()
 params = add_arg(params, audio_params)
 show_params(params)
 log.debug(f"got audio parameters")
+
+print "Time to actually test if you did everything right"
