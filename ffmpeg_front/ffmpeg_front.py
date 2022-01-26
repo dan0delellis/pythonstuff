@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse, logging, configparser
-from get_loudness_colorspace import get_loudnorm_params
+from get_loudness_colorspace import get_loudnorm_params, get_colorspace_params
 
 #setup logging
 log = logging.getLogger()
@@ -114,6 +114,7 @@ def parse_video_options():
     log.info("Parsing video options")
     v = config['video']
     v_codec = v['videoCodec'].lower()
+    v_hdr = v['retainHDR'].lower()
     v_profile = v['videoProfile'].lower()
     v_speed = v['preset'].lower()
     v_min = v['videoMinRate'].lower()
@@ -136,6 +137,11 @@ def parse_video_options():
 
     if not is_that_a_no(v_codec):
         parameters = add_arg(parameters, ["-c:v", v_codec])
+
+    if not is_that_a_no(v_hdr):
+        hdr_params = parse_hdr_params(filename)
+
+
 #here's where it gets messy
 #how to keep color space:
 #https://codecalamity.com/encoding-uhd-4k-hdr10-videos-with-ffmpeg/
@@ -166,8 +172,6 @@ def parse_video_options():
     subs_options = ""
     resolution_options = ""
     other_filters = ""
-    filter_list = []
-
 
     if not is_that_a_no(burn_subs):
         filter_set = True
@@ -193,6 +197,49 @@ def parse_video_options():
     parameters = add_arg(parameters, ["-vf", filter_list])
 
     return parameters
+
+def parse_hdr_params():
+    hdr_dict = get_colorspace_params(args.input)
+
+    if type(hdr_dict) = "Exception":
+        log.error(hdr_dict)
+        exit(1)
+
+    colorprim = "color_primaries"
+    transfer = "color_transfer"
+    colormatrix = "color_space"
+    pix_fmt = "pix_fmt"
+    master_display = "master-display"
+    max_cll = "light-level"
+
+    hdr_params = ["hdr-opt=1:repeat-headers=1"]
+    if colorprim in hdr_dict:
+        add_arg(hdr_params,f"colorprim={hdr_dict[colorprim]}")
+
+    if transfer in hdr_dict:
+        add_arg(hdr_params,f"transfer={hdr_dict[transfer]}")
+
+    if colormatrix in hdr_dict:
+        add_arg(hdr_params,f"colormatrix={hdr_dict[colormatrix]}")
+
+    #-x265-params hdr-opt=1:repeat-headers=1:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:master-display=G(8500,39850)B(6550,2300)R(35400,14600)WP(15635,16450)L(40000000,50):max-cll=0,0
+
+    if hdr_dict[master_display] != False:
+        carestian_string = f"{master_display}=" \
+            f"G({hdr_dict[green_x]},{hdr_dict[green_y]})" \
+            f"B({hdr_dict[blue_x]},{hdr_dict[blue_y]})" \
+            f"R({hdr_dict[red_x]},{hdr_dict[red_y]})" \
+            f"WP({hdr_dict[white_point_x]},{hdr_dict[white_point_y]})" \
+            f"L({hdr_dict[max_luminance]},{hdr_dict[min_luminance]})"
+        add_arg(hdr_params,cartesian_string)
+
+    if hdr_dict[max_cll] != False:
+        cll_string=f"max-cll={max_content},{max_average}"
+        add_arg(hdr_params,cll_string)
+
+    param_string = ":".join(hdr_params)
+
+    return ["-x265-params", param_string]
 
 def parse_resolution(res):
     if res in resolutions:
@@ -299,7 +346,6 @@ params = add_arg(params, video_params)
 show_params(params)
 log.debug(f"got video parameters")
 
-print("\nFrom here, I need to do the following:\n* make a function for parsing the video filters. Do subtitles first, if applicable, then do video scaling, also if applicable.\n* If neither is applicable, then just return nothing and don't append anything to the video command.\n* If either or both are set, it has this syntax:\n* `-vf \"subtitles=subfile:style=whatever , anotherfilter=option=setting:option2=setting , scale=640:480\"`\n* It's basically CSV and you can put whitespace around the commas.\n* Video scaling should be last.\nYou can specify the default sub file in a video stream by just specifying the video file probably should have that option be something like `\$inputfile` in the config, including the slash cuz that's not allowed in filenames. If you want stream index 3 instead, do `videofile:si=3`\n\n")
 print("after that you need to do this stuff: https://codecalamity.com/encoding-uhd-4k-hdr10-videos-with-ffmpeg/\n\n")
 audio_params = parse_audio_options()
 params = add_arg(params, audio_params)

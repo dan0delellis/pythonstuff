@@ -44,18 +44,20 @@ def clean_data(data):
         "max_content",
         "max_average"
     ]
+    cleaned["master-display"] = 0
+    cleaned["light-level"] = 0
 
     for i in denom_50k:
         if i in data:
             cleaned[i] = force_denom(data[i],50000)
         else:
-            cleaned["master-data"] = False
+            cleaned["master-display"] = False
 
     for i in denom_10k:
         if i in data:
             cleaned[i] = force_denom(data[i],10000)
         else:
-            cleaned["master-data"] = False
+            cleaned["master-display"] = False
 
     for i in int_val:
         if not i in data:
@@ -157,5 +159,8 @@ def write_json_file(data,filename):
     filehandle.close()
 
 filename = sys.argv[1]
-print(get_colorspace_params(filename))
+herp = get_colorspace_params(filename)
+for key in herp:
+    print(f"{key}: {herp[key]}")
+
 #get_loudnorm_params(filename,"I=-16:TP=-1.5:LRA=11")
