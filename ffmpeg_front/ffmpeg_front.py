@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse, logging, configparser, sys
-from get_loudness_colorspace import get_loudnorm_params, get_colorspace_params
+from get_loudness_colorspace import get_loudnorm_params, get_colorspace_params, run_cmd_get_pipes
 
 if len(sys.argv) == 1:
     sys.argv.append("--help")
@@ -143,7 +143,7 @@ def parse_video_options():
 
     if not is_that_a_no(v_hdr):
         hdr_params = parse_hdr_params()
-        parameters = add_arg(parameters, ["-x265-params", hdr_params["x265-params"]])
+        parameters = add_arg(parameters, ["-x265-params", f'\"{hdr_params["x265-params"]}\"'])
 
     if is_that_a_no(v_profile):
         parameters = add_arg(parameters, "-profile:v")
@@ -205,6 +205,7 @@ def parse_video_options():
 
 def parse_hdr_params():
     hdr_dict = get_colorspace_params(args.input)
+    log.debug(hdr_dict)
 
     if type(hdr_dict) == "Exception":
         log.error(hdr_dict)
@@ -229,15 +230,15 @@ def parse_hdr_params():
 
     if hdr_dict[master_display] != False:
         carestian_string = f"{master_display}=" \
-            f"G({hdr_dict[green_x]},{hdr_dict[green_y]})" \
-            f"B({hdr_dict[blue_x]},{hdr_dict[blue_y]})" \
-            f"R({hdr_dict[red_x]},{hdr_dict[red_y]})" \
-            f"WP({hdr_dict[white_point_x]},{hdr_dict[white_point_y]})" \
-            f"L({hdr_dict[max_luminance]},{hdr_dict[min_luminance]})"
-        add_arg(hdr_params,cartesian_string)
+            f"G({hdr_dict['green_x']},{hdr_dict['green_y']})" \
+            f"B({hdr_dict['blue_x']},{hdr_dict['blue_y']})" \
+            f"R({hdr_dict['red_x']},{hdr_dict['red_y']})" \
+            f"WP({hdr_dict['white_point_x']},{hdr_dict['white_point_y']})" \
+            f"L({hdr_dict['max_luminance']},{hdr_dict['min_luminance']})"
+        add_arg(hdr_params,carestian_string)
 
     if hdr_dict[max_cll] != False:
-        cll_string=f"max-cll={max_content},{max_average}"
+        cll_string=f"max-cll={hdr_dict['max_content']},{hdr_dict['max_average']}"
         add_arg(hdr_params,cll_string)
 
     param_string = ":".join(hdr_params)
@@ -354,4 +355,10 @@ log.debug(f"got audio parameters")
 
 params = add_arg(params, args.output)
 
-print(" ".join(params))
+log.info("All settings parsed. Executing this command:")
+log.info(" ".join(params))
+
+returncode, stdout, stderr = run_cmd_get_pipes(params)
+log.info(f"Command ended. $? = {returncode}")
+log.info(f"stderr: {stderr}")
+log.info(f"stdout: {stdout}")

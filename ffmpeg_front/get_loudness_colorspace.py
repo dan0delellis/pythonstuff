@@ -9,10 +9,11 @@ def run_cmd_get_pipes(cmd):
     try:
         pipes = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         std_out, std_err = pipes.communicate()
+        ret = pipes.returncode
     except Exception as e:
-        return(e, ":(")
+        return(ret, e, ":(")
 
-    return std_out, std_err
+    return ret, std_out, std_err
 
 def force_denom(v, d):
     p = v.split("/")
@@ -44,8 +45,8 @@ def clean_data(data):
         "max_content",
         "max_average"
     ]
-    cleaned["master-display"] = 0
-    cleaned["light-level"] = 0
+    cleaned["master-display"] = True
+    cleaned["light-level"] = True
 
     for i in denom_50k:
         if i in data:
@@ -105,7 +106,7 @@ def get_colorspace_params(filename,fieldlist="frame=color_space,color_primaries,
         '-i',
         filename
     ]
-    std_out, std_err = run_cmd_get_pipes(cmd)
+    returncode, std_out, std_err = run_cmd_get_pipes(cmd)
     if type(std_out) == "Exception":
         return std_out
 
@@ -136,7 +137,7 @@ def get_loudnorm_params(filename,loudnorm_presets):
 
     print(cmd)
 
-    std_out, std_err = run_cmd_get_pipes(cmd)
+    returncode, std_out, std_err = run_cmd_get_pipes(cmd)
 
     if type(std_out) == "Exception":
         return std_out
