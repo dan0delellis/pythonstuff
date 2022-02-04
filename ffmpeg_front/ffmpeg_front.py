@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-import argparse, logging, configparser
+import argparse, logging, configparser, sys
 from get_loudness_colorspace import get_loudnorm_params, get_colorspace_params
+
+if len(sys.argv) == 1:
+    sys.argv.append("--help")
 
 #setup logging
 log = logging.getLogger()
@@ -60,7 +63,6 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-print(args)
 
 config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 config.sections()
@@ -141,17 +143,17 @@ def parse_video_options():
 
     if not is_that_a_no(v_hdr):
         hdr_params = parse_hdr_params()
-        parameters = add_arg(parameters, hdr_params["x265-params"])
+        parameters = add_arg(parameters, ["-x265-params", hdr_params["x265-params"]])
 
     if is_that_a_no(v_profile):
-        parameters = add_arg(parameters, "-profile")
-        if v_codec == 'h264':
+        parameters = add_arg(parameters, "-profile:v")
+        if v_codec == 'libx264':
             parameters = add_arg(parameters, "high10")
-        if v_codec == 'h265' or v_codec == 'hevc':
+        if v_codec == 'libx265' or v_codec == 'hevc':
             parameters = add_arg(parameters, "main10")
     else:
         if v_profile != "default":
-            parameters = add_arg(parameters, ["-profile", v_profile])
+            parameters = add_arg(parameters, ["-profile:v", v_profile])
 
     if v['mode'].lower == 'cbr':
         parameters = add_arg(parameters, ["-b:v", v["bitRate"]])
@@ -283,7 +285,6 @@ def parse_audio_options():
     #set audio codec
     parameters = add_arg(parameters, ['-c:a'])
 
-
     if not is_that_a_no(a['justCopy']):
         parameters = add_arg(parameters, "copy")
         return parameters
@@ -301,7 +302,6 @@ def parse_audio_options():
 
     parameters = add_arg(parameters, defaults["bitrate"])
 
-
     #set audio channels
     parameters = add_arg(parameters, "-ac")
 
@@ -309,7 +309,6 @@ def parse_audio_options():
         defaults["channels"] = a['audioChannels']
 
     parameters = add_arg(parameters, defaults["channels"])
-
 
     if not is_that_a_no(a['loudnorm']):
         parameters = add_arg(parameters, "-af")
@@ -353,4 +352,6 @@ params = add_arg(params, audio_params)
 show_params(params)
 log.debug(f"got audio parameters")
 
-print "Time to actually test if you did everything right"
+params = add_arg(params, args.output)
+
+print(" ".join(params))

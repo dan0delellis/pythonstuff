@@ -112,7 +112,6 @@ def get_colorspace_params(filename,fieldlist="frame=color_space,color_primaries,
     json_text = std_out.decode("utf-8")
     full_json = json.loads(json_text)
     data = flatten_json(full_json["frames"])
-
     return(data)
 
 def get_loudnorm_params(filename,loudnorm_presets):
