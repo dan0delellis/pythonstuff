@@ -3,7 +3,25 @@ import sys
 import subprocess
 import re
 import json
-import os.path
+import os, os.path
+import shutil
+
+def move_done_file(input_file):
+    file_full_path = os.path.abspath(input_file)
+    file_dir_path = os.path.dirname(file_full_path)
+    file_dir_info = os.stat(file_dir_path) #st_uid, st_gid, st_mode
+    old_dir_path = f"{file_dir_path}/.old"
+    old_file_path = f"{old_dir_path}/{input_file}"
+    try:
+        if not (os.path.exists(old_path)):
+            os.mkdir(old_dir_path, mode=file_dir_info.st_mode)
+            os.chown(old_dir_path, uid=file_dir_info.st_uid, gid=file_dir_info.st_gid)
+
+        shutil.move(file_full_path, old_file_path)
+    except Exception as e:
+        return(e)
+
+    return(f"Moved `{file_full_path}` to `{old_file_path}`")
 
 def run_cmd_get_pipes(cmd):
     try:
@@ -11,7 +29,7 @@ def run_cmd_get_pipes(cmd):
         std_out, std_err = pipes.communicate()
         ret = pipes.returncode
     except Exception as e:
-        return(ret, e, ":(")
+        return(ret, e, f"stdout:{std_out}; stderr:{std_err}")
 
     return ret, std_out, std_err
 

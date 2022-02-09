@@ -1,21 +1,10 @@
 #!/usr/bin/env python3
-import argparse, logging, configparser, sys
-from get_loudness_colorspace import get_loudnorm_params, get_colorspace_params, run_cmd_get_pipes
+import argparse, logging, configparser, sys, os.path
+from get_loudness_colorspace import get_loudnorm_params, get_colorspace_params, run_cmd_get_pipes, move_done_file
 
 if len(sys.argv) == 1:
     sys.argv.append("--help")
 
-#setup logging
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
-fh = logging.FileHandler('ooga.log')
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-logFormat = logging.Formatter('%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-ch.setFormatter(logFormat)
-fh.setFormatter(logFormat)
-log.addHandler(ch)
-log.addHandler(fh)
 
 #parse arugments
 parser = argparse.ArgumentParser()
@@ -49,17 +38,23 @@ parser.add_argument(
 )
 parser.add_argument(
     '--move-done-files',
-    dest="old-files",
-    help="Move completed files to a .old directory in same directory as the settings.json file",
+    dest="move_old",
+    help="Move completed files to a .old directory in same directory as the input file",
     default=False,
     action="store_true"
 )
 parser.add_argument(
     '--conf-help',
-    dest="conf-help",
+    dest="conf_help",
     help="Show help info for the config file",
     default=False,
     action="store_true"
+)
+parser.add_argument(
+    '--log-file',
+    dest="log_file",
+    help="path of logfile. Defaults to 'reencoder.log' in path of config file",
+    default="",
 )
 
 args = parser.parse_args()
@@ -68,6 +63,22 @@ config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolat
 config.sections()
 config.read(args.config)
 
+#setup logging
+log_path = "ooga.log"
+log = logging.getLogger()
+log.setLevel(logging.INFO)
+if (args.log_file == ""):
+    log_path = f"{os.path.dirname(os.path.abspath(args.config))}/reencoder.log"
+else:
+    log_path = args.log_file
+fh = logging.FileHandler(log_path)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+logFormat = logging.Formatter('%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
+ch.setFormatter(logFormat)
+fh.setFormatter(logFormat)
+log.addHandler(ch)
+log.addHandler(fh)
 ### Done with args/config/logging
 
 resolutions = {
@@ -359,6 +370,11 @@ log.info("All settings parsed. Executing this command:")
 log.info(" ".join(params))
 
 returncode, stdout, stderr = run_cmd_get_pipes(params)
-log.info(f"Command ended. $? = {returncode}")
-log.info(f"stderr: {stderr}")
-log.info(f"stdout: {stdout}")
+log.debug(f"Command ended. $? = {returncode}")
+log.debug(f"stderr: {stderr}")
+log.debug(f"stdout: {stdout}")
+
+if args.move_old:
+    log.debug("Moving input file")
+    final = move_done_file(args.input)
+    log.info(final)
