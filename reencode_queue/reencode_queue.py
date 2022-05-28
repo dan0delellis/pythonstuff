@@ -47,7 +47,7 @@ parser.add_argument(
 parser.add_argument(
     '--skip-file',
     dest="skip_file",
-    type="str"
+    type=str,
     default="all_done.conf",
     help="Filename to place in root of directory to be skipped. Config file will be renamed to this once all actionable files have been processed."
 )
@@ -55,7 +55,7 @@ parser.add_argument(
 parser.add_argument(
     '--failed-dir',
     dest="failed_dir",
-    type="str"
+    type=str,
     default=False,
     help="Directory to move source files to if re-encoding fails. Defaults to '.reencode-failed' in source dir"
 )
@@ -63,8 +63,17 @@ parser.add_argument(
 
 #flow:
     #parse options
+args = parser.parse_args()
     #Does the sourcedir exist ? scan source dir : exit 1
+if not os.path.isdir(args.source):
+    print("source dir {} is not a valid path".format(args.source))
+    exit(1)
     #Can I find any config files matching the magic filename ? get a list of files in that dir root from the max depth : exit 2
+        #This is more complicated than I thought it would be
+        #First, generate a list of all
+for root, dirs, files in os.walk(args.source):
+    if args.skip_file in files:
+        continue
     #Are there any actionable files? Loop through list of actionable files : rename magic file to args.skip_file
         #For each file, does expected output file already exist ? next : !!FEED FILE TO REENCODER!!
             #Did it exit okay ? Move file to {old_dir} : move file to {failed_dir}
