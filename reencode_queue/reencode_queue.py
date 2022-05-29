@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse, logging, configparser, sys, os.path
-from process_file import in_hidden_dir
+from process_file import in_hidden_dir, create_path_if_needed
 #parse arugments
 #source dir, output dir, retirement dir, logdir, magic filename
 
@@ -33,8 +33,8 @@ parser.add_argument(
     '--old-dir',
     dest="old_dir",
     default=False,
-    type=str,
-    help="Destination directory for original files that have been successfully reencoded. Default is to leave files in place."
+    type=bool,
+    help="Move done files to a .done dir in the directory the file exists in. Just passes the --move-done flag to ffmpegfront"
 )
 
 parser.add_argument(
@@ -95,13 +95,13 @@ for root, _, files in os.walk(args.source):
         output_root = root.replace(args.source, args.output_dir)
         if not os.path.isdir(output_root):
             print(f"Need to create path: {output_root}")
+            create_path_if_needed(output_root)
         #For each file, does expected output file already exist ? next : !!FEED FILE TO REENCODER!!
         for in_file in files:
             file_path = f"{root}/{in_file}"
             out_file = f"{output_root}/{in_file}"
-            old_file = f"{args.old_dir}/{in_file}"
             print(f"Operating on: {in_file}")
-            print(f"\tInput path: '{file_path}'; Output file: '{out_file}'; Old file: '{old_file}'")
+            print(f"\tInput path: '{file_path}'; Output file: '{out_file}'")
             print("\tDoes the expected output file already exist?")
             if os.path.isfile(f"{out_file}"):
                 print(f"\t{in_file} already exists.")
