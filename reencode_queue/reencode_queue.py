@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse, logging, configparser, sys, os.path
+from process_file import in_hidden_dir
 #parse arugments
 #source dir, output dir, retirement dir, logdir, magic filename
 
@@ -72,7 +73,7 @@ if args.log_dir == False:
 #if args.old_dir == False:
     #Do nothing because default behavior is to keep files in place
 if args.output_dir == False:
-    args.output_dir = f"{args.source_dir}/done/"
+    args.output_dir = f"{args.source}/.done/"
 
     #Does the sourcedir exist ? scan source dir : exit 1
 if not os.path.isdir(args.source):
@@ -85,6 +86,11 @@ for root, _, files in os.walk(args.source):
     if args.skip_file in files:
         continue
     if args.config in files:
+    #Does this live in a hidden directory?
+        config_file = f"{root}/{args.config}"
+        if in_hidden_dir(config_file):
+            print(f"{config_file} present, but is in a hidden dir")
+            continue
     #Are there any actionable files? Loop through list of actionable files : rename magic file to args.skip_file
         output_root = root.replace(args.source, args.output_dir)
         if not os.path.isdir(output_root):
