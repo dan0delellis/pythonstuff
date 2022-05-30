@@ -374,7 +374,7 @@ log.debug(f"Command ended. $? = {returncode}")
 log.debug(f"stderr: {stderr}")
 log.debug(f"stdout: {stdout}")
 
-if args.move_old:
+if args.move_old and returncode == 0:
     log.debug("Moving input file")
     final = move_done_file(args.input)
     log.info(final)
