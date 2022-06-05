@@ -32,7 +32,7 @@ def in_hidden_dir(path):
             return hidden
     return hidden
 
-def create_path_if_needed(path,make_dir_for_filepath=False):
+def create_path_if_needed(path,template_dir=".",make_dir_for_filepath=False):
     #If the path is a filename, then we we want to make a home for that file, not make a directory with that filename
     if make_dir_for_filepath:
         path=os.path.dirname(path)
@@ -40,13 +40,15 @@ def create_path_if_needed(path,make_dir_for_filepath=False):
     dir_realpath = os.path.abspath(path)
 
     if not os.path.exists(dir_realpath):
-        dir_info = os.stat(dir_realpath)
-        os.mkdir(dir_realpath, mode=file_dir_info.st_mode)
-        os.chown(dir_realpath, uid=file_dir_info.st_uid, gid=file_dir_info.st_gid)
+        dir_info = os.stat(template_dir)
+        os.makedirs(dir_realpath, mode=dir_info.st_mode)
+        os.chown(dir_realpath, uid=dir_info.st_uid, gid=dir_info.st_gid)
 
-def check_video_stream(path):
+def check_video_stream(path,fprobe_path="/usr/bin/ffprobe"):
+    if fprobe_path=="/bin/true":
+        return True
     success = False
-    cmd = f"/usr/bin/ffprobe -show_entries stream=width,height -of json -v quiet -i {path}"
+    cmd = f"{fprobe_path} -show_entries stream=width,height -of json -v quiet -i {path}"
     ret, std_out, std_err = run_cmd_get_pipes(cmd)
     if type(std_out) == "Exception":
         return success
