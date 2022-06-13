@@ -6,12 +6,18 @@ import os, os.path
 import shutil
 import json
 
+def logger(msg):
+    cmd = ["logger", "-s", msg]
+    _,_,std_err = run_cmd_get_pipes(cmd)
+    print(std_err)
+
 def run_cmd_get_pipes(cmd):
-    print(type(cmd))
     if type(cmd) == str:
         cmd = cmd.split()
+
+    if cmd[0] != "logger":
+        logger(f"EXEC:    {cmd}")
     try:
-        print(cmd)
         pipes = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         std_out, std_err = pipes.communicate()
         ret = pipes.returncode
@@ -33,14 +39,19 @@ def in_hidden_dir(path):
     return hidden
 
 def create_path_if_needed(path,template_dir=".",make_dir_for_filepath=False):
+    logger(f"Checking if {path} needs to be created")
+
     #If the path is a filename, then we we want to make a home for that file, not make a directory with that filename
     if make_dir_for_filepath:
+        logger("The path provided is a file. Getting the dir tree for where the file lives.")
         path=os.path.dirname(path)
 
     dir_realpath = os.path.abspath(path)
+    logger(f"The real path is :{dir_realpath}")
 
     if not os.path.exists(dir_realpath):
         dir_info = os.stat(template_dir)
+        logger(f"Attempting to create dir: `{dir_realpath}`")
         os.makedirs(dir_realpath, mode=dir_info.st_mode)
         os.chown(dir_realpath, uid=dir_info.st_uid, gid=dir_info.st_gid)
 
@@ -55,10 +66,12 @@ def check_video_stream(path,fprobe_path="/usr/bin/ffprobe"):
 
     json_text = std_out.decode("utf-8")
     full_json = json.loads(json_text)
-    for stream in full_json['streams']:
-        if "height" in stream.keys() and "width" in stream.keys():
-            success = True
-            return success
+    try:
+        for stream in full_json['streams']:
+            if "height" in stream.keys() and "width" in stream.keys():
+                success = True
+    except:
+        logger(f"{path} is not a video file")
 
     return success
 
@@ -68,6 +81,7 @@ def feed_to_ffmpeg_front(CONFIG, INPUT, OUTPUT, LOG_FILE,move_done=False,ffront_
     if move_done:
         move_done_files = "--move-done-files"
     cmd = f"{ffront_path} --config {CONFIG} --input {INPUT} --output {OUTPUT} --no-overwrite {move_done_files} --log-file {LOG_FILE}"
+    logger(cmd)
     ret, std_out, std_err = run_cmd_get_pipes(cmd)
     if ret != 0 or std_err != b'':
         print(f"Issue running cmd: exit code {ret}, std_err:{std_err}")
