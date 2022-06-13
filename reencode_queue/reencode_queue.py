@@ -21,7 +21,7 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--move-old',   dest="move_old",    default=False,  type=bool,
+    '--move-done',   dest="move_done",    default=False,  action='store_true',
     help="Move done files to a .done dir in the directory the file exists in. Just passes the --move-done flag to ffmpegfront"
 )
 
@@ -119,7 +119,7 @@ for root, _, files in os.walk(args.source,followlinks=True):
                 INPUT=file_path,
                 OUTPUT=out_file,
                 LOG_FILE=log_file,
-                move_done=args.move_old,
+                move_done=args.move_done,
                 ffront_path=args.ffront_path
             )
 
@@ -130,6 +130,10 @@ for root, _, files in os.walk(args.source,followlinks=True):
                 failed_dir=f"{args.failed_dir}/{file_path}"
                 failed_file = f"{failed_dir}/{file_path}"
                 move_file(file_path, failed_file)
+
+            if args.move_done:
+                move_file(file_path,old_file)
+
 
         completed_config=f"{root}/{args.config}"
         skip_dir_file=f"{root}/{args.skip_file}"

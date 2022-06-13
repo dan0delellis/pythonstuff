@@ -94,8 +94,9 @@ def move_file(source_file, dest_file):
     dest_full_path = os.path.abspath(dest_file)
     create_path_if_needed(dest_full_path, make_dir_for_filepath=True)
     try:
-        shutil.move(file_full_path, old_file_path)
+        shutil.move(file_full_path, dest_full_path)
     except Exception as e:
+        logger(e)
         return(e)
 
-    return(f"Moved `{file_full_path}` to `{dest_file_path}`")
+    return(f"Moved `{file_full_path}` to `{dest_full_path}`")
