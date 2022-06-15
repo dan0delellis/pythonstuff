@@ -83,13 +83,16 @@ def feed_to_ffmpeg_front(CONFIG, INPUT, OUTPUT, LOG_FILE,move_done=False,ffront_
     cmd = f"{ffront_path} --config {CONFIG} --input {INPUT} --output {OUTPUT} --no-overwrite {move_done_files} --log-file {LOG_FILE}"
     logger(cmd)
     ret, std_out, std_err = run_cmd_get_pipes(cmd)
-    if ret != 0 or std_err != b'':
+    if ret != 0:
         print(f"Issue running cmd: exit code {ret}, std_err:{std_err}")
     else:
         success = True
-    return success
 
-def move_file(source_file, dest_file):
+    return outcome(success=success, std_out=std_out, std_err=std_err)
+
+def move_file(testing, source_file, dest_file):
+    if testing:
+        logger(f"not actually moving {source_file} to {dest_file} because testing")
     file_full_path = os.path.abspath(source_file)
     dest_full_path = os.path.abspath(dest_file)
     create_path_if_needed(dest_full_path, make_dir_for_filepath=True)

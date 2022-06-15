@@ -21,6 +21,10 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '--test',   dest="testing",    default=False,  action='store_true',
+    help="use /usr/bin/echo and just print to stdout what would happen. Also gets set if you use '/usr/bin/echo' as the path for the ffmpeg_front path"
+)
+parser.add_argument(
     '--move-done',   dest="move_done",    default=False,  action='store_true',
     help="Move done files to a .done dir in the directory the file exists in. Just passes the --move-done flag to ffmpegfront"
 )
@@ -66,6 +70,11 @@ if args.log_dir == False:
 if args.output_dir == False:
     args.output_dir = f"{args.source}/.reencode_queue_completed/"
 
+testing = False
+if args.testing == True or args.ffront_path == "/usr/bin/echo":
+    args.ffront_path = "/usr/bin/echo"
+    testing = True
+
 if os.path.abspath(args.source) == os.path.abspath(args.output_dir):
     logger("The output directory is the same as the source directory. This is a bad idea because you'll just reencode the same set of files forever and fill up your disk")
     os.exit(255)
@@ -89,6 +98,7 @@ for root, _, files in os.walk(args.source,followlinks=True):
             continue
     #Are there any actionable files? Loop through list of actionable files : rename magic file to args.skip_file
         output_root = root.replace(args.source, args.output_dir)
+        failed_root = root.replace(args.source, args.failed_dir)
         if not os.path.isdir(output_root):
             logger(f"Need to create OUTPUT path: {output_root}")
             create_path_if_needed(output_root,template_dir=args.source)
@@ -97,8 +107,9 @@ for root, _, files in os.walk(args.source,followlinks=True):
             file_path = f"{root}/{in_file}"
             old_file = f"{root}/.done/{in_file}"
             out_file = f"{output_root}/{in_file}"
+            failed_file = f"{failed_root}/{in_file}"
             logger(f"Operating on: {in_file}")
-            logger(f"    Input path: '{file_path}'; Output file: '{out_file}'")
+            logger(f"    Input path: '{file_path}'; Output file: '{out_file}'; failed file: '{failed_file}'")
             logger("    Does the expected output file already exist?")
             if os.path.isfile(f"{out_file}"):
                 logger(f"    {out_file} already exists. Can't safely continue on this one.")
@@ -122,20 +133,21 @@ for root, _, files in os.walk(args.source,followlinks=True):
                 move_done=args.move_done,
                 ffront_path=args.ffront_path
             )
-
+            logger(f"   Outcome: succeeded: {success['success']}; stdout: {success['std_out']}; std_err:{success['std_err']}")
             #Did it exit okay ? do nothing because the program handles that already : move file to {failed_dir}
             logger(f"    Did it exit okay? Moving {in_file} to {old_file} if --old-dir is set")
-            if not success:
-                logger(f"    Set the failed reencode location:")
-                failed_dir=f"{args.failed_dir}/{file_path}"
-                failed_file = f"{failed_dir}/{file_path}"
-                move_file(file_path, failed_file)
+            if not success['success']:
+                move_file(testing,file_path, failed_file)
+                continue
 
             if args.move_done:
-                move_file(file_path,old_file)
+                move_file(testing,file_path,old_file)
 
 
         completed_config=f"{root}/{args.config}"
         skip_dir_file=f"{root}/{args.skip_file}"
         logger(f"Moving {completed_config} to {skip_dir_file}")
-        move_file(completed_config, skip_dir_file)
+        move_file(testing,completed_config, skip_dir_file)
+        #end of operations for each file
+    #end of instructions if a config file exists in a directory
+#end of files found on os.walk on source directory
