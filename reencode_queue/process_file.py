@@ -88,7 +88,13 @@ def feed_to_ffmpeg_front(CONFIG, INPUT, OUTPUT, LOG_FILE,move_done=False,ffront_
     else:
         success = True
 
-    return outcome(success=success, std_out=std_out, std_err=std_err)
+    result = {
+        "succeeded" : success,
+        "std_out"   : std_out,
+        "std_err"   : std_err
+    }
+
+    return result
 
 def move_file(testing, source_file, dest_file):
     if testing:
