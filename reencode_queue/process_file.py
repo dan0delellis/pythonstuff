@@ -6,6 +6,7 @@ import os, os.path
 import shutil
 import json
 
+
 def logger(msg):
     cmd = ["logger", "-s", msg]
     _,_,std_err = run_cmd_get_pipes(cmd)
@@ -109,3 +110,116 @@ def move_file(testing, source_file, dest_file):
         return(e)
 
     return(f"Moved `{file_full_path}` to `{dest_full_path}`")
+
+def make_template(template):
+    tv_normal = {
+        "video": {
+        	"rasPiHardwareEncode":False,
+        	"justCopy":False,
+        	"videoCodec":"libx265",
+        	"videoProfile":"main10",
+        	"retainHDR":True,
+        	"preset":"slow",
+        	"resolution":"720p",
+        	"mode":"crf",
+        	"quality":"23",
+        	"tune":"false",
+        	"videoBitrate":"3M",
+        	"videoMinRate":"1M",
+        	"videoMaxRate":"6M",
+        	"videoBufsize":"6M",
+        	"otherFilters":False,
+        },
+        "audio": {
+        	"justCopy":False,
+        	"audioCodec":"aac",
+        	"audioChannels":2,
+        	"audioBitrate":"200k",
+        	"loudnorm":"2pass",
+        },
+        "subtitles": {
+        	"burnInSubtitles":False,
+        	"subtitleExternalFile":False,
+        	"subtitleStyle":False,
+        	"subtitleStream":1,
+        },
+        "time": {
+        	"introSkipSeconds":0,
+        	"totalTimeSeconds":0,
+
+        }
+    }
+    tv_high = {
+        "video": {
+        	"rasPiHardwareEncode":False,
+        	"justCopy":False,
+        	"videoCodec":"libx265",
+        	"videoProfile":"main10",
+        	"retainHDR":True,
+        	"preset":"slow",
+        	"resolution":"1080p",
+        	"mode":"crf",
+        	"quality":"21",
+        	"tune":"false",
+        	"videoBitrate":"4M",
+        	"videoMinRate":"1M",
+        	"videoMaxRate":"6M",
+        	"videoBufsize":"6M",
+        	"otherFilters":False,
+        },
+        "audio": {
+        	"justCopy":False,
+        	"audioCodec":"aac",
+        	"audioChannels":2,
+        	"audioBitrate":"200k",
+        	"loudnorm":"2pass",
+        },
+        "subtitles": {
+        	"burnInSubtitles":False,
+        	"subtitleExternalFile":False,
+        	"subtitleStyle":False,
+        	"subtitleStream":1,
+        },
+        "time": {
+        	"introSkipSeconds":0,
+        	"totalTimeSeconds":0,
+
+        }
+    }
+
+    movie = {
+        "video": {
+        	"rasPiHardwareEncode":False,
+        	"justCopy":True,
+        },
+        "audio": {
+        	"justCopy":False,
+        	"audioCodec":"aac",
+        	"audioChannels":2,
+        	"audioBitrate":"200k",
+        	"loudnorm":"2pass",
+        },
+        "subtitles": {
+        	"burnInSubtitles":False,
+        	"subtitleExternalFile":False,
+        	"subtitleStyle":False,
+        	"subtitleStream":1,
+        },
+        "time": {
+        	"introSkipSeconds":0,
+        	"totalTimeSeconds":0,
+        }
+    }
+
+    templates = {
+        "tv-normal" : tv_normal,
+        "tv-high" : tv_high,
+        "movie" : movie,
+        "movies": movie,
+    }
+    for section in templates[template].keys():
+        temp = templates[template][section]
+        print(f"[{section}]")
+        for key in temp.keys():
+            print(f"{key} = {temp[key]}")
+        print("")
