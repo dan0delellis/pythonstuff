@@ -215,8 +215,13 @@ def make_template(template):
         "tv-normal" : tv_normal,
         "tv-high" : tv_high,
         "movie" : movie,
-        "movies": movie,
     }
+    if not template in templates.keys():
+        print(f"{template} is not a pre-defined template. List of existing templates:")
+        for key in templates.keys():
+            print(f"- {key}")
+        return
+
     for section in templates[template].keys():
         temp = templates[template][section]
         print(f"[{section}]")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse, logging, logging.handlers, configparser, sys, os.path, time
-from process_file import in_hidden_dir, create_path_if_needed, move_file, check_video_stream, feed_to_ffmpeg_front, logger
+from process_file import in_hidden_dir, create_path_if_needed, move_file, check_video_stream, feed_to_ffmpeg_front, logger, make_template
 #parse arugments
 #source dir, output dir, retirement dir, logdir, magic filename
 
@@ -8,6 +8,9 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 handler = logging.handlers.SysLogHandler(address = '/dev/log')
 formatter = logging.Formatter('[%(module)s %(levelname)s]: %(message)s')
+
+template_names = ['tv-high', 'tv-normal', 'movie']
+template_names_str = ",".join(template_names)
 
 handler.setFormatter(formatter)
 
@@ -64,7 +67,17 @@ parser.add_argument(
     '-p', '--fprobe-path', dest="fprobe_path", type=str, default="/usr/bin/ffprobe",
     help="Executable path to use for ffprobe. use /bin/true for testing on a dir tree without actual video files"
 )
+
+parser.add_argument(
+    '-t', '--make-template', dest="template", type=str, const=False, action="store", nargs='?',
+    help='Make a template file that has pre-configured values for different presets: {template_presets}. Use one of these values with the flag, or you will get a config file that simply copies both the video and audio streams to the target file.'
+)
+
 args = parser.parse_args()
+
+if args.template:
+    make_template(args.template)
+    exit(0)
 
 
 #if skip-file == config-file there's a logic error and it won't be able to process stuff.
