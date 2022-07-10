@@ -111,6 +111,12 @@ if not os.path.isdir(args.source):
     log.error("source dir {} is not a valid path".format(args.source))
     exit(1)
 
+log.debug("herpderp find this string in syslog")
+log.debug(f"Source dir: {args.source}")
+log.debug(f"Output dir: {args.output_dir}")
+log.debug(f"Log dir: {args.log_dir}")
+log.debug(f"Failed dir: {args.failed_dir}")
+
 while True:
     log.debug("Starting loop...")
     #Can I find any config files matching the magic filename ? get a list of files in that dir : exit 2
@@ -139,7 +145,7 @@ while True:
                 old_file = f"{root}/.done/{in_file}"
                 out_file = f"{output_root}/{in_file}"
                 failed_file = f"{failed_root}/{in_file}"
-                log_dir = os.path.dirname(f"{args.log_dir}")
+                log_dir = os.path.abspath(f"{args.log_dir}")
                 log_file = f"{log_dir}/{in_file}.log"
                 log.debug(f"Operating on: {in_file}; Input path: '{file_path}'; Output file: '{out_file}'; failed file: '{failed_file}'; log file: {log_file}")
                 log.debug("Testing for expected output file already existing")
