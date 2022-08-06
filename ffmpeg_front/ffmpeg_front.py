@@ -119,7 +119,7 @@ def parse_time_options():
         parameters = add_arg(parameters, ['-ss', iss])
 
     if float(tts) > 0:
-        parameters = add_arg(parameters, ['-ts', tss])
+        parameters = add_arg(parameters, ['-ts', tts])
     return parameters
 
 def parse_video_options():

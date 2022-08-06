@@ -70,7 +70,7 @@ parser.add_argument(
 
 parser.add_argument(
     '-t', '--make-template', dest="template", type=str, const="tv-normal", nargs='?',
-    help='Make a template file that has pre-configured values for different presets: {template_presets}. Use one of these values with the flag, or you will get a config file that simply copies both the video and audio streams to the target file.'
+    help=f"Make a template file that has pre-configured values for different presets: {template_names_str}. Use one of these values with the flag, or you will get a config file that simply copies both the video and audio streams to the target file."
 )
 
 args = parser.parse_args()

@@ -8,6 +8,8 @@ import json
 
 
 def logger(msg):
+    if type(msg) == list:
+        msg = " ".join(msg)
     cmd = ["logger", "-s", msg]
     _,_,std_err = run_cmd_get_pipes(cmd)
     print(std_err)
@@ -20,8 +22,8 @@ def run_cmd_get_pipes(cmd):
         logger(f"EXEC:    {cmd}")
     try:
         pipes = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        std_out, std_err = pipes.communicate()
         ret = pipes.returncode
+        std_out, std_err = pipes.communicate()
     except Exception as e:
         return(ret, e, f"stdout:{std_out}; stderr:{std_err}")
 
@@ -60,13 +62,21 @@ def check_video_stream(path,fprobe_path="/usr/bin/ffprobe"):
     if fprobe_path=="/bin/true":
         return True
     success = False
-    cmd = f"{fprobe_path} -show_entries stream=width,height -of json -v quiet -i {path}"
+    cmd = f'{fprobe_path} -show_entries stream=width,height -of json -v error -i'.split()
+    cmd.append(f"{path}")
     ret, std_out, std_err = run_cmd_get_pipes(cmd)
     if type(std_out) == "Exception":
         return success
-
     json_text = std_out.decode("utf-8")
-    full_json = json.loads(json_text)
+    err_txt = std_err.decode("utf-8")
+    if ret != 0:
+        logger(f"return code: {ret}")
+        logger(f"std_err: {err_txt}".replace("\n", " "))
+        logger(f"std_out: {json_text}".replace("\n", " "))
+    try:
+        full_json = json.loads(json_text)
+    except:
+        logger(f"couldn't decode json text: {json_text}")
     try:
         for stream in full_json['streams']:
             if "height" in stream.keys() and "width" in stream.keys():
@@ -79,9 +89,9 @@ def check_video_stream(path,fprobe_path="/usr/bin/ffprobe"):
 def feed_to_ffmpeg_front(CONFIG, INPUT, OUTPUT, LOG_FILE,move_done=False,ffront_path="/usr/bin/ffmpeg_front.py"):
     success = False
     move_done_files = ""
+    cmd = [f"{ffront_path}", "--config", f"{CONFIG}", "--input", f"{INPUT}", "--output", f"{OUTPUT}", "--no-overwrite", "--log-file", f"{LOG_FILE}"]
     if move_done:
-        move_done_files = "--move-done-files"
-    cmd = f"{ffront_path} --config {CONFIG} --input {INPUT} --output {OUTPUT} --no-overwrite {move_done_files} --log-file {LOG_FILE}"
+        cmd.append("--move-done-files")
     logger(cmd)
     ret, std_out, std_err = run_cmd_get_pipes(cmd)
     if ret != 0:

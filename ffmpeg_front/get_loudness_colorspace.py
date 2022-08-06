@@ -13,7 +13,7 @@ def move_done_file(input_file):
     old_dir_path = f"{file_dir_path}/.old"
     old_file_path = f"{old_dir_path}/{input_file}"
     try:
-        if not (os.path.exists(old_path)):
+        if not (os.path.exists(old_dir_path)):
             os.mkdir(old_dir_path, mode=file_dir_info.st_mode)
             os.chown(old_dir_path, uid=file_dir_info.st_uid, gid=file_dir_info.st_gid)
 
