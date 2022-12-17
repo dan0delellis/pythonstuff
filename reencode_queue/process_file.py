@@ -19,11 +19,11 @@ def run_cmd_get_pipes(cmd):
         cmd = cmd.split()
 
     if cmd[0] != "logger":
-        logger(f"EXEC:    {cmd}")
+        logger(f"EXEC:\t{cmd}")
     try:
         pipes = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        ret = pipes.returncode
         std_out, std_err = pipes.communicate()
+        ret = pipes.poll() #returncode
     except Exception as e:
         return(ret, e, f"stdout:{std_out}; stderr:{std_err}")
 
@@ -62,7 +62,7 @@ def check_video_stream(path,fprobe_path="/usr/bin/ffprobe"):
     if fprobe_path=="/bin/true":
         return True
     success = False
-    cmd = f'{fprobe_path} -show_entries stream=width,height,duration -of json -v error -i'.split()
+    cmd = f'{fprobe_path} -show_entries stream=duration,width,height -of json -v error -i'.split()
     cmd.append(f"{path}")
     ret, std_out, std_err = run_cmd_get_pipes(cmd)
     if type(std_out) == "Exception":
@@ -77,11 +77,21 @@ def check_video_stream(path,fprobe_path="/usr/bin/ffprobe"):
         full_json = json.loads(json_text)
     except:
         logger(f"couldn't decode json text: {json_text}")
+    allkeys = {
+        "height":False,
+        "width":False,
+        "duration":False
+    }
     try:
         for stream in full_json['streams']:
-            if "height" in stream.keys() and "width" in stream.keys():
-                if "duration" in stream.keys() and stream["duration"] > "100":
-                    success = True
+            if "height" in stream.keys():
+                allkeys['height'] = True
+            if "width" in stream.keys():
+                allkeys['width'] = True
+            if "duration" in stream.keys() and stream["duration"] > "100":
+                allkeys['duration'] = True
+
+        success = allkeys['height'] and allkeys['width'] and allkeys['duration']
     except:
         logger(f"{path} is not a video file")
 
