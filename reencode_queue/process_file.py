@@ -80,7 +80,7 @@ def check_video_stream(path,fprobe_path="/usr/bin/ffprobe"):
     try:
         for stream in full_json['streams']:
             if "height" in stream.keys() and "width" in stream.keys():
-                if "duration" in stream.keys() and stream["duration"] > "1":
+                if "duration" in stream.keys() and stream["duration"] > "100":
                     success = True
     except:
         logger(f"{path} is not a video file")
