@@ -62,7 +62,7 @@ def check_video_stream(path,fprobe_path="/usr/bin/ffprobe"):
     if fprobe_path=="/bin/true":
         return True
     success = False
-    cmd = f'{fprobe_path} -show_entries stream=width,height -of json -v error -i'.split()
+    cmd = f'{fprobe_path} -show_entries stream=width,height,duration -of json -v error -i'.split()
     cmd.append(f"{path}")
     ret, std_out, std_err = run_cmd_get_pipes(cmd)
     if type(std_out) == "Exception":
@@ -80,7 +80,8 @@ def check_video_stream(path,fprobe_path="/usr/bin/ffprobe"):
     try:
         for stream in full_json['streams']:
             if "height" in stream.keys() and "width" in stream.keys():
-                success = True
+                if "duration" in stream.keys() and stream["duration"] > "1":
+                    success = True
     except:
         logger(f"{path} is not a video file")
 

@@ -126,6 +126,11 @@ def parse_video_options():
     parameters = []
     log.info("Parsing video options")
     v = config['video']
+
+    if not is_that_a_no(v['justCopy']):
+        parameters = add_arg(parameters, ["-c:v", "copy"])
+        return parameters
+
     v_codec = v['videoCodec'].lower()
     v_hdr = v['retainHDR'].lower()
     v_profile = v['videoProfile'].lower()
@@ -138,10 +143,6 @@ def parse_video_options():
     resolution = v['resolution'].lower()
     s = config['subtitles']
     burn_subs = s['burnInSubtitles'].lower()
-
-    if not is_that_a_no(v['justCopy']):
-        parameters = add_arg(parameters, ["-c:v", "copy"])
-        return parameters
 
     if not is_that_a_no(v['rasPiHardwareEncode']):
         parameters = add_arg(parameters, ["-c:v", "h264_omx", "-profile:v", "high"])
