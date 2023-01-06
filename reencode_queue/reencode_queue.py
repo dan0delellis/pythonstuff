@@ -167,7 +167,7 @@ while True:
                     move_done=args.move_done,
                     ffront_path=args.ffront_path
                 )
-                log.info(f"Outcome: succeeded: {success['success']}; stdout: {success['std_out']}; std_err:{success['std_err']}")
+                log.info(f"Outcome: succeeded: {success['succeeded']}; stdout: {success['std_out']}; std_err:{success['std_err']}")
                 #Did it exit okay ? do nothing because the program handles that already : move file to {failed_dir}
                 log.debug(f"Did it exit okay? Moving {in_file} to {old_file} if --old-dir is set")
                 if not success['succeeded']:
@@ -186,4 +186,4 @@ while True:
         #end of instructions if a config file exists in a directory
     #end of files found on os.walk on source directory
     log.info("All files scanned. Sleeping for a while and will restart the loop")
-    time.sleep(300)
+    time.sleep(180)
