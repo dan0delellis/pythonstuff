@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse, logging, configparser, sys, os.path
-from get_loudness_colorspace import get_loudnorm_params, get_colorspace_params, run_cmd_get_pipes, move_done_file
+from get_loudness_colorspace import get_loudnorm_params, get_colorspace_params, run_cmd_get_pipes, move_done_file, get_sample_rate
 
 if len(sys.argv) == 1:
     sys.argv.append("--help")
@@ -340,6 +340,10 @@ def parse_audio_options():
                 ":linear=true"])
 
         parameters = add_arg(parameters, loudnorm_filter)
+
+        if not is_that_a_no(a['keepSampleRate']):
+            sample_rate = get_sample_rate(args.input)
+            parameters = add_arg(parameters, ['-ar', sample_rate])
 
     return parameters
 

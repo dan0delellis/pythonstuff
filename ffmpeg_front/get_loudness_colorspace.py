@@ -104,6 +104,25 @@ def flatten_json(y):
     out = clean_data(out)
     return out
 
+def make_json_output(cmd):
+    returncode, std_out, std_err = run_cmd_get_pipes(cmd)
+    if type(std_out) == "Exception":
+       return False
+
+    json_text = std_out.decode("utf-8")
+    full_json = json.loads(json_text)
+    return full_json
+
+
+def get_sample_rate(filename):
+    cmd = f'ffprobe -show_entries stream=sample_rate -of json -v error -i {filename}'.split()
+    full_json = make_json_output(cmd)
+    for stream in full_json["streams"]:
+        if stream != {}:
+            return(stream['sample_rate'])
+
+    return False
+
 def get_colorspace_params(filename,fieldlist="frame=color_space,color_primaries,color_transfer,side_data_list,pix_fmt"):
     print(filename)
     data = {}
@@ -124,12 +143,7 @@ def get_colorspace_params(filename,fieldlist="frame=color_space,color_primaries,
         '-i',
         filename
     ]
-    returncode, std_out, std_err = run_cmd_get_pipes(cmd)
-    if type(std_out) == "Exception":
-        return std_out
-
-    json_text = std_out.decode("utf-8")
-    full_json = json.loads(json_text)
+    full_json = make_json_output(cmd)
     data = flatten_json(full_json["frames"])
     return(data)
 
@@ -176,8 +190,5 @@ def write_json_file(data,filename):
     filehandle.close()
 
 #filename = sys.argv[1]
-#herp = get_colorspace_params(filename)
-#for key in herp:
-#    print(f"{key}: {herp[key]}")
-#
-#get_loudnorm_params(filename,"I=-16:TP=-1.5:LRA=11")
+#herp = get_sample_rate(filename)
+#print(herp)

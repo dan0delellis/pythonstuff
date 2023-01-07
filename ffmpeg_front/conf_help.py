@@ -26,7 +26,8 @@ def conf_help(name):
         ["audioCodec","string","Codec to use for audio encoding.\n`ffmpeg -encoders` will list available codecs.","aac"],
         ["audioChannels","number","Number of audio channels to mux to","2"],
         ["audioBitrate","<number><M/K>","Bitrate to use for audio encoding","200K"],
-        ["loudnorm", "True/False/2pass", "Use loudnorm to normalize audio levels","2pass"]
+        ["loudnorm", "True/False/2pass", "Use loudnorm to normalize audio levels","2pass"],
+        ["keepSampleRate", "True/False", "Have the original sample rate in output (only matters if using loudnorm)"]
     ]
 
     subs_msg = [
