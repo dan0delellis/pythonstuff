@@ -25,7 +25,13 @@ parser.add_argument(
     type=str,
     help="Directory name with subtitle files. Default=./Subs"
 )
-
+parser.add_argument(
+    '--test', '-t',
+    dest="dry_run",
+    default=False,
+    action='store_true',
+    help="Don't actually run commands, just process the files"
+)
 args = parser.parse_args()
 
 def run_cmd(cmd):
@@ -75,6 +81,8 @@ for files in listdir(args.epdir):
     print(t.cmd)
     print(t.done_cmd)
     print(t.tar_subs)
+    if args.dry_run:
+        continue
     p = run_cmd(t.cmd)
     if p.returncode != 0:
         print(p.stderr)
